@@ -1,6 +1,16 @@
 
 ---
 
+## **Steps To run**
+- go to root directory
+- run `make`
+- run `make all`
+- run `./backend`
+- cd into `generated`
+- run `make`
+- run `make all`
+- run `./test`
+
 ### **1. Compile-Time Meta-Programming with Template Haskell (TH)**
 
 We use Template Haskell to generate Haskell code at **compile-time**. This is a form of **compile-time meta-programming**, where we define specific patterns or templates for our code, and the compiler generates the corresponding Haskell code for us.
