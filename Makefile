@@ -1,7 +1,7 @@
 # Makefile
 
 GHC=ghc
-SRC=src/Main.hs src/ModelGen.hs src/Registry.hs
+SRC=src/Main.hs src/ModelGen.hs src/Registry.hs src/ModelRegistry.hs
 OUT=backend
 
 .PHONY: all clean run

@@ -1,89 +1,73 @@
 {-# LANGUAGE TemplateHaskell #-}
 
-module ModelGen (generateModel, writeModelToFile) where
+module ModelGen (generateModel, generateAllModels, writeModelToFile) where
 
 import Language.Haskell.TH
-import Language.Haskell.TH.Ppr (ppr)
-import Language.Haskell.TH.PprLib (Doc, text, hcat, vcat, ($+$), empty, punctuate, comma)
+import Language.Haskell.TH.PprLib
 import Data.Char (toLower, toUpper)
 import Data.Typeable
-import System.IO
-import Data.List (isPrefixOf)
+import System.Directory (createDirectoryIfMissing)
+import System.FilePath ((</>))
 
+-- Lowercase first character
 lowerFirst :: String -> String
 lowerFirst (x:xs) = toLower x : xs
 lowerFirst [] = []
 
+-- Capitalize first character
 capitalize :: String -> String
 capitalize (x:xs) = toUpper x : xs
 capitalize [] = []
 
+-- Generate field name: User + id → userId
 fieldName :: String -> String -> Name
 fieldName typeName field = mkName $ lowerFirst typeName ++ capitalize field
 
--- Function to generate the model code as a string (not performing IO here)
+-- Core TH generator for a model
 generateModel :: String -> [(String, Name)] -> Q [Dec]
 generateModel typeName fields = do
   let typeN = mkName typeName
-      constructor = typeN
-
   fieldDecs <- mapM
-    (\(fname, ftype) -> do
-        let name' = fieldName typeName fname
-        return (name', Bang NoSourceUnpackedness NoSourceStrictness, ConT ftype)
-    ) fields
-
+    (\(fname, ftype) -> pure (fieldName typeName fname,
+                              Bang NoSourceUnpackedness NoSourceStrictness,
+                              ConT ftype)) fields
   let dataDef = DataD [] typeN [] Nothing
-                  [RecC constructor fieldDecs]
+                  [RecC typeN fieldDecs]
                   [DerivClause Nothing [ConT ''Show, ConT ''Eq, ConT ''Typeable]]
-
   return [dataDef]
 
--- Function to generate the boilerplate file contents with the correct model code
-generateFileContents :: String -> String -> String
-generateFileContents typeName modelCode = unlines [
-    "module " ++ typeName ++ " where",
-    "",
-    "import Data.Typeable",
-    "import Prelude hiding (id)",
-    "",
-    modelCode
-  ]
+-- TH generator for multiple models
+generateAllModels :: [(String, [(String, Name)])] -> Q [Dec]
+generateAllModels = fmap concat . mapM (uncurry generateModel)
 
--- Custom pretty-printing to avoid fully qualified names
-simplePpr :: Dec -> Doc
-simplePpr (DataD _ tName _ _ [RecC _ fields] [DerivClause _ derived]) = do
-  let typeStr = text (nameBase tName)
-      fieldDocs = map (\(fName, _, ConT fType) ->
-                        hcat [text (nameBase fName), text " :: ", text (nameBase fType)])
-                      fields
-      fieldStr = vcat (punctuate comma (map (\d -> hcat [text "  ", d]) fieldDocs))
-      derivDocs = map (\(ConT d) -> text (nameBase d)) derived
-      derivStr = hcat [text "deriving (", hcat (punctuate comma derivDocs), text ")"]
+-- Pretty-printer for generated models
+simplePpr :: Dec -> String
+simplePpr (DataD _ tName _ _ [RecC _ fields] [DerivClause _ derived]) =
+  "data " ++ nameBase tName ++ " = " ++ nameBase tName ++ " {\n" ++
+    concatMap (\(fName, _, ConT fType) ->
+                "  " ++ nameBase fName ++ " :: " ++ nameBase fType ++ ",\n") fields ++
+  "} deriving (" ++
+    concat (punctuateComma (map (\(ConT d) -> nameBase d) derived)) ++ ")"
+  where
+    punctuateComma [] = []
+    punctuateComma [x] = [x]
+    punctuateComma (x:xs) = x : map (", " ++) xs
+simplePpr _ = error "Unsupported declaration"
 
-  -- Ensure `deriving` is on the same line as the closing brace
-  hcat [text "data ", typeStr, text " = ", typeStr, text " {",
-        fieldStr,
-        text "} ", derivStr]  -- Deriving on the same line as the closing brace
-simplePpr _ = empty
-
-
--- Helper function to write code to a file
-writeModelToFile :: String -> String -> IO ()
-writeModelToFile typeName _ = do
-  let fileName = "src/" ++ typeName ++ ".hs"
-  decs <- case typeName of
-    "User" -> runQ $ generateModel "User" [("id", ''Int), ("name", ''String)]
-    "Product" -> runQ $ generateModel "Product" [("sku", ''String), ("price", ''Double)]
-    "Order" -> runQ $ generateModel "Order" [("orderId", ''Int), ("userId", ''Int), ("total", ''Double)]
-    _ -> error $ "No model definition for " ++ typeName
-  let modelCode = show (simplePpr (head decs))  -- Use custom pretty-printer
-  writeFile fileName (generateFileContents typeName modelCode)
-
--- Debugging function for Model generation
-printModel :: String -> Q [Dec] -> IO ()
-printModel typeName modelQ = do
-  decs <- runQ modelQ
-  let modelCode = show (simplePpr (head decs))
-  putStrLn $ "Generated model code for " ++ typeName ++ ":"
-  putStrLn modelCode
+-- Write a model to a file under ./generated/
+writeModelToFile :: String -> [(String, Name)] -> IO ()
+writeModelToFile typeName fields = do
+  decs <- runQ $ generateModel typeName fields
+  let modelCode = simplePpr (head decs)
+      fileContent = unlines
+        [ "module " ++ typeName ++ " where"
+        , ""
+        , "import Data.Typeable"
+        , "import Prelude hiding (id)"
+        , ""
+        , modelCode
+        ]
+      targetDir = "generated"
+      filePath = targetDir </> typeName ++ ".hs"
+  createDirectoryIfMissing True targetDir
+  writeFile filePath fileContent
