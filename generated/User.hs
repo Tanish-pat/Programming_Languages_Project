@@ -5,5 +5,5 @@ import Prelude hiding (id)
 
 data User = User {
   userId :: Int,
-  userName :: String,
+  userName :: String
 } deriving (Show, Eq, Typeable)

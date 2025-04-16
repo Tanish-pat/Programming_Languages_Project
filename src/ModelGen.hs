@@ -3,6 +3,7 @@
 module ModelGen (generateModel, generateAllModels, writeModelToFile) where
 
 import Language.Haskell.TH
+import Language.Haskell.TH.Syntax (Name, VarStrictType)  -- Add this import
 import Language.Haskell.TH.PprLib
 import Data.Char (toLower, toUpper)
 import Data.Typeable
@@ -45,10 +46,18 @@ simplePpr :: Dec -> String
 simplePpr (DataD _ tName _ _ [RecC _ fields] [DerivClause _ derived]) =
   "data " ++ nameBase tName ++ " = " ++ nameBase tName ++ " {\n" ++
     concatMap (\(fName, _, ConT fType) ->
-                "  " ++ nameBase fName ++ " :: " ++ nameBase fType ++ ",\n") fields ++
-  "} deriving (" ++
+                "  " ++ nameBase fName ++ " :: " ++ nameBase fType ++ if lastField fName fields then "" else ",\n") fields ++
+  "\n} deriving (" ++
     concat (punctuateComma (map (\(ConT d) -> nameBase d) derived)) ++ ")"
   where
+    -- Check if it's the last field in the list
+    lastField :: Name -> [VarStrictType] -> Bool
+    lastField fName fields = fName == fst3 (last fields)
+
+    -- Helper to access the first element of a 3-tuple
+    fst3 :: (a, b, c) -> a
+    fst3 (x, _, _) = x
+
     punctuateComma [] = []
     punctuateComma [x] = [x]
     punctuateComma (x:xs) = x : map (", " ++) xs

@@ -5,5 +5,5 @@ import Prelude hiding (id)
 
 data Product = Product {
   productSku :: String,
-  productPrice :: Double,
+  productPrice :: Double
 } deriving (Show, Eq, Typeable)

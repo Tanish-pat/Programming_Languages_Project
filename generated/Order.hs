@@ -6,5 +6,5 @@ import Prelude hiding (id)
 data Order = Order {
   orderOrderId :: Int,
   orderUserId :: Int,
-  orderTotal :: Double,
+  orderTotal :: Double
 } deriving (Show, Eq, Typeable)
