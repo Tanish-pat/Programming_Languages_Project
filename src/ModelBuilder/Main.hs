@@ -14,6 +14,6 @@ $(generateAllModels models)
 
 main :: IO ()
 main = do
-  putStrLn "Generating Haskell files for models into the Generated/ folder..."
+  putStrLn "Generating Haskell files for models into the generated/models folder..."
   mapM_ (\(modelName, fields) -> writeModelToFile modelName fields) models
   putStrLn "Model generation complete."
