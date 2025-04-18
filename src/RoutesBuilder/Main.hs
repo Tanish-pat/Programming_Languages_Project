@@ -1,9 +1,9 @@
 module Main where
 
-import RouteGen
-import RouteRegistry
+import RouteGen (writeModule)
+import RouteRegistry (routeRegistry)
 
 main :: IO ()
 main = do
   let outDir = "../../generated/routes"
-  mapM_ (writeModule outDir) routeSpecs
+  mapM_ (writeModule outDir) routeRegistry

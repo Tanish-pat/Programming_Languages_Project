@@ -1,19 +1,33 @@
-module UserRoutes (getAllUsers, getById, createNew, updateById, deleteById) where
+module UserRoutes (getAllUsers, getById, createUser, updateUser, deleteUser, searchUsers) where
 
-import Data.Text (Text, (<>))
+import Data.Text (Text, (<>), intercalate)
+import qualified Data.Text as T
+
+basePath :: Text
+basePath = "/api/user"
+
+path :: [Text] -> Text
+path segments = basePath <> "/" <> intercalate "/" segments
+
+query :: [(Text, Text)] -> Text
+query [] = ""
+query ps = "?" <> intercalate "&" [k <> "=" <> v | (k, v) <- ps]
 
 getAllUsers :: Text
-getAllUsers = "/user/getAll"
+getAllUsers = path ["getAll"]
 
 getById :: Text -> Text
-getById x = "/user/getById/" <> x
+getById id = path ["getById", id]
 
-createNew :: Text
-createNew = "/user/create"
+createUser :: Text
+createUser = path ["create"]
 
-updateById :: Text -> Text
-updateById x = "/user/update/" <> x
+updateUser :: Text -> Text
+updateUser id = path ["update", id]
 
-deleteById :: Text -> Text
-deleteById x = "/user/delete/" <> x
+deleteUser :: Text -> Text
+deleteUser id = path ["delete", id]
+
+searchUsers :: Text -> Text -> Text
+searchUsers name age = path ["search"] <> query [("name", name), ("age", age)]
 

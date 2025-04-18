@@ -1,53 +1,83 @@
 {-# LANGUAGE OverloadedStrings #-}
 
-module RouteGen where
+module RouteGen (writeModule) where
 
-import qualified Data.Text as T
+import           RouteRegistry
+import qualified Data.Text    as T
 import qualified Data.Text.IO as TIO
-import RouteRegistry
-import System.FilePath ((</>))
-import System.Directory (createDirectoryIfMissing)
+import           System.Directory (createDirectoryIfMissing)
+import           System.FilePath  ((</>))
+import           Data.Char        (toLower)
 
--- List of endpoints that require a parameter
-dynamicRoutes :: [String]
-dynamicRoutes = ["getById", "update", "delete"]
+writeModule :: FilePath -> RouteGroup -> IO ()
+writeModule outDir (RouteGroup model routes) = do
+  let mdl        = map toLower model
+      moduleName = model ++ "Routes"
+      filePath   = outDir </> moduleName ++ ".hs"
 
--- Generate a module for each RouteSpec
-writeModule :: FilePath -> RouteSpec -> IO ()
-writeModule outDir (RouteSpec model paths funcs) = do
-  let moduleName = model ++ "Routes"
-      fileName = outDir </> moduleName ++ ".hs"
       header = T.unlines
-        [ T.pack $ "module " ++ moduleName ++ " (" ++ exports funcs ++ ") where"
+        [ "module " <> T.pack moduleName
+          <> " (" <> exportList routes <> ") where"
         , ""
-        , "import Data.Text (Text, (<>))"
+        , "import Data.Text (Text, (<>), intercalate)"
+        , "import qualified Data.Text as T"
+        , ""
+        , "basePath :: Text"
+        , "basePath = \"/api/" <> T.pack mdl <> "\""
+        , ""
+        , "path :: [Text] -> Text"
+        , "path segments = basePath <> \"/\" <> intercalate \"/\" segments"
+        , ""
+        , "query :: [(Text, Text)] -> Text"
+        , "query [] = \"\""
+        , "query ps = \"?\" <> intercalate \"&\" [k <> \"=\" <> v | (k, v) <- ps]"
         , ""
         ]
 
-      body = T.unlines $ zipWith (generateFunction model) paths funcs
+      body = T.unlines $ map (routeDecl mdl) routes
 
   createDirectoryIfMissing True outDir
-  TIO.writeFile fileName (header <> body)
+  TIO.writeFile filePath (header <> body)
 
--- Format exported function list
-exports :: [String] -> String
-exports = concat . zipWith (\i name -> if i == 0 then name else ", " ++ name) [0..]
+-- | Comma‑separated export list
+exportList :: [RouteSpecExtended] -> T.Text
+exportList rs = T.intercalate ", " (map (T.pack . functionName) rs)
 
--- Generate function definitions
-generateFunction :: String -> String -> String -> T.Text
-generateFunction model path fname
-  | path `elem` dynamicRoutes =
-      T.unlines
-        [ T.pack $ fname ++ " :: Text -> Text"
-        , T.pack $ fname ++ " x = " ++ show ("/" ++ mapLower model ++ "/" ++ path ++ "/") ++ " <> x"
-        ]
-  | otherwise =
-      T.unlines
-        [ T.pack $ fname ++ " :: Text"
-        , T.pack $ fname ++ " = " ++ show ("/" ++ mapLower model ++ "/" ++ path)
-        ]
+routeDecl :: String -> RouteSpecExtended -> T.Text
+routeDecl mdl (RouteSpecExtended fname _verb parts queries) =
+  let segParams = [ v | Dynamic v <- parts ]
+      args      = segParams ++ queries
 
--- Lowercase the first character of a string
-mapLower :: String -> String
-mapLower [] = []
-mapLower (x:xs) = toEnum (fromEnum x + 32) : xs
+      sig = T.pack fname <> " :: "
+          <> if null args
+               then "Text"
+               else T.intercalate " -> " (replicate (length args) "Text") <> " -> Text"
+
+      def = T.pack fname <> (if null args then "" else " " <> T.unwords (map T.pack args))
+          <> " = " <> routeExpr mdl parts queries
+  in T.unlines [sig, def]
+
+routeExpr :: String -> [RoutePathPart] -> [String] -> T.Text
+routeExpr mdl parts queries =
+  let -- Build the path call
+      segCodes = map partCode parts
+      pathCode = T.concat ["path [", T.intercalate ", " segCodes, "]"]
+
+      -- Build the query call if needed
+      queryCode = if null queries
+        then ""
+        else
+          T.concat
+            [ " <> query ["
+            , T.intercalate ", "
+                [ T.concat ["(\"", T.pack q, "\", ", T.pack q, ")"]
+                | q <- queries
+                ]
+            , "]"
+            ]
+  in T.concat [pathCode, queryCode]
+
+-- | Render one path segment as Text of Haskell code
+partCode :: RoutePathPart -> T.Text
+partCode (Static s)  = T.concat ["\"", T.pack s, "\""]
+partCode (Dynamic v) = T.pack v
