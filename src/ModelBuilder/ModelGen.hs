@@ -76,7 +76,7 @@ writeModelToFile typeName fields = do
         , ""
         , modelCode
         ]
-      targetDir = "generated"
+      targetDir = "../../generated/models"
       filePath = targetDir </> typeName ++ ".hs"
   createDirectoryIfMissing True targetDir
   writeFile filePath fileContent

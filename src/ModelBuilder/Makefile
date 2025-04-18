@@ -1,9 +1,9 @@
 GHC=ghc
-SRC=src/Main.hs src/ModelGen.hs src/Registry.hs src/ModelRegistry.hs
+SRC=Main.hs ModelGen.hs Registry.hs ModelRegistry.hs
 OUT=backend
 
-ODIR=src/build/obj
-HIDIR=src/build/hi
+ODIR=build/obj
+HIDIR=build/hi
 
 $(shell mkdir -p $(ODIR) $(HIDIR))
 
