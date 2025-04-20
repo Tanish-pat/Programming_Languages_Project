@@ -1,1 +1,2 @@
-/dist-newstyle
+# Ignore dist-newstyle directory
+/dist-newstyle/
