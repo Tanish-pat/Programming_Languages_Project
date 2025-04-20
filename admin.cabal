@@ -15,7 +15,7 @@ common warnings
 executable admin
     main-is:          Main.hs
     hs-source-dirs:   app
-    build-depends:    base ^>=4.18.3.0
+    build-depends: base >=4.15 && <4.16
                     , aeson >=1.5
                     , bytestring >=0.11.5.4
                     , modelbuilder
@@ -43,7 +43,7 @@ executable admin
 library modelbuilder
   hs-source-dirs:      app/ModelBuilder
   build-depends:
-      base >=4.7 && <5,
+      base >=4.15 && <4.16,
       aeson >=1.5,
       bytestring >=0.11.5.4,
       template-haskell,
@@ -65,7 +65,7 @@ library modelbuilder
 library routebuilder
   hs-source-dirs:      app/RoutesBuilder
   build-depends:
-      base >=4.7 && <5,
+      base >=4.15 && <4.16,
       http-types,
       aeson >=1.5,
       bytestring >=0.11.5.4,

@@ -24,14 +24,14 @@ capitalize [] = []
 
 -- Generate field name: User + id → userId
 fieldName :: String -> String -> Name
-fieldName typeName field = mkName $ lowerFirst typeName ++ capitalize field
+fieldName modelName field = mkName $ lowerFirst modelName ++ capitalize field
 
 -- Core TH generator for a model
 generateModel :: String -> [(String, Name)] -> Q [Dec]
-generateModel typeName fields = do
-  let typeN = mkName typeName
+generateModel modelName fields = do
+  let typeN = mkName modelName
   fieldDecs <- mapM
-    (\(fname, ftype) -> pure (fieldName typeName fname,
+    (\(fname, ftype) -> pure (fieldName modelName fname,
                               Bang NoSourceUnpackedness NoSourceStrictness,
                               ConT ftype)) fields
   let dataDef = DataD [] typeN [] Nothing
@@ -66,13 +66,13 @@ simplePpr (DataD _ tName _ _ [RecC _ fields] [DerivClause _ derived]) =
 simplePpr _ = error "Unsupported declaration"
 
 writeModelToFile :: String -> [(String, Name)] -> IO ()
-writeModelToFile typeName fields = do
-  decs <- runQ $ generateModel typeName fields
+writeModelToFile modelName fields = do
+  decs <- runQ $ generateModel modelName fields
   let modelCode = simplePpr (head decs)
       fileContent = unlines
         [ "{-# LANGUAGE DeriveGeneric #-}"
         , ""
-        , "module " ++ typeName ++ " where"
+        , "module " ++ modelName ++ " where"
         , ""
         , "import Data.Typeable"
         , "import Prelude hiding (id)"
@@ -82,10 +82,10 @@ writeModelToFile typeName fields = do
         , ""
         , modelCode
         , ""
-        , "instance ToJSON " ++ typeName
-        , "instance FromJSON " ++ typeName
+        , "instance ToJSON " ++ modelName
+        , "instance FromJSON " ++ modelName
         ]
       targetDir = "generated/models"
-      filePath = targetDir </> typeName ++ ".hs"
+      filePath = targetDir </> modelName ++ ".hs"
   createDirectoryIfMissing True targetDir
   writeFile filePath fileContent

@@ -5,11 +5,12 @@ module ModelBuilder.Main where
 
 import GHC.Generics (Generic)
 import Language.Haskell.TH (Name)
-import ModelRegistry (models)
+import ModelRegistry (models)  -- this models is the runtime model data
 import ModelGen (generateAllModels, writeModelToFile)
 import qualified Data.Map.Strict as Map
 
-$(generateAllModels models)
+-- ✅ Use a different name in TH to avoid conflict
+$(generateAllModels ModelRegistry.models)
 
 main :: IO ()
 main = do
