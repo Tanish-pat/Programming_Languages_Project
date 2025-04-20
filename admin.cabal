@@ -1,0 +1,60 @@
+cabal-version:      3.0
+name:               admin
+version:            0.1.0.0
+license:            BSD-3-Clause
+license-file:       LICENSE
+author:             Tanish
+maintainer:         Tanish.Pathania@iiitb.ac.in
+build-type:         Simple
+extra-doc-files:    CHANGELOG.md
+
+common warnings
+    ghc-options: -Wall -v0 -w -dno-debug-output
+
+-- Define the admin executable that will run modelbuilder and routebuilder
+executable admin
+    main-is:          Main.hs
+    hs-source-dirs:   app
+    build-depends:    base ^>=4.18.3.0
+                    , modelbuilder
+                    , routebuilder
+                    , template-haskell
+                    , containers
+    ghc-options: -v0 -w -dno-debug-output
+    default-language: Haskell2010
+
+    -- This tells Cabal to include modelbuilder and routebuilder modules
+    other-modules:
+        ModelBuilder.Main,
+        RoutesBuilder.Main
+
+-- Define the modelbuilder library
+library modelbuilder
+  hs-source-dirs:      app/ModelBuilder
+  build-depends:
+      base >=4.7 && <5,
+      template-haskell,
+      directory,
+      filepath,
+      containers
+  ghc-options: -v0 -w -dno-debug-output
+  default-language:    Haskell2010
+  exposed-modules:
+      ModelGen,
+      ModelRegistry
+
+-- Define the routebuilder library
+library routebuilder
+  hs-source-dirs:      app/RoutesBuilder
+  build-depends:
+      base >=4.7 && <5,
+      template-haskell,
+      directory,
+      filepath,
+      containers,
+      text
+  ghc-options: -v0 -w -dno-debug-output
+  default-language:    Haskell2010
+  exposed-modules:
+      RouteGen,
+      RouteRegistry
