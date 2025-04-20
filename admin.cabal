@@ -16,10 +16,14 @@ executable admin
     main-is:          Main.hs
     hs-source-dirs:   app
     build-depends:    base ^>=4.18.3.0
+                    , aeson >=1.5
+                    , bytestring >=0.11.5.4
                     , modelbuilder
                     , routebuilder
                     , template-haskell
                     , containers
+                    , filepath
+                    , directory
     ghc-options: -v0 -w -dno-debug-output
     default-language: Haskell2010
 
@@ -33,6 +37,8 @@ library modelbuilder
   hs-source-dirs:      app/ModelBuilder
   build-depends:
       base >=4.7 && <5,
+      aeson >=1.5,
+      bytestring >=0.11.5.4,
       template-haskell,
       directory,
       filepath,
@@ -41,13 +47,15 @@ library modelbuilder
   default-language:    Haskell2010
   exposed-modules:
       ModelGen,
-      ModelRegistry
+      ModelRegistry,
 
 -- Define the routebuilder library
 library routebuilder
   hs-source-dirs:      app/RoutesBuilder
   build-depends:
       base >=4.7 && <5,
+      aeson >=1.5,
+      bytestring >=0.11.5.4,
       template-haskell,
       directory,
       filepath,
