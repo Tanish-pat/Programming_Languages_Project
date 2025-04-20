@@ -1,7 +1,9 @@
 {-# LANGUAGE TemplateHaskell #-}
+{-# LANGUAGE DeriveGeneric #-}
 
 module ModelBuilder.Main where
 
+import GHC.Generics (Generic)
 import Language.Haskell.TH (Name)
 import ModelRegistry (models)
 import ModelGen (generateAllModels, writeModelToFile)

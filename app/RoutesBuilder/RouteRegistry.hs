@@ -9,7 +9,7 @@ data RoutePathPart
 -- | One route function spec
 data RouteSpecExtended = RouteSpecExtended
   { functionName :: String
-  , httpVerb     :: String        -- e.g. "GET" (unused here)
+  , httpVerb     :: String        -- e.g. "GET", "POST" (now used explicitly for documentation or other purposes)
   , pathParts    :: [RoutePathPart]
   , queryParams  :: [String]
   } deriving (Show)
@@ -111,4 +111,3 @@ routeRegistry =
         , RouteSpecExtended "getByCategory"       "GET"    [Static "byCategory", Dynamic "categoryId"]               []
         ]
     ]
-

@@ -1,12 +1,20 @@
+{-# LANGUAGE DeriveGeneric #-}
+
 module Product where
 
 import Data.Typeable
 import Prelude hiding (id)
+import Data.Text (Text)
+import GHC.Generics (Generic)
+import Data.Aeson (ToJSON, FromJSON)
 
 data Product = Product {
-  productSku :: String,
-  productName :: String,
-  productDescription :: String,
+  productSku :: Text,
+  productName :: Text,
+  productDescription :: Text,
   productPrice :: Double,
-  productTags :: String
-} deriving (Show, Eq, Typeable)
+  productTags :: Text
+} deriving (Show, Eq, Typeable, Generic)
+
+instance ToJSON Product
+instance FromJSON Product

@@ -3,15 +3,16 @@
 module RouteGen (writeModule) where
 
 import           RouteRegistry
-import qualified Data.Text    as T
+import qualified Data.Text as T
 import qualified Data.Text.IO as TIO
 import           System.Directory (createDirectoryIfMissing)
 import           System.FilePath  ((</>))
-import           Data.Char        (toLower)
+import Network.HTTP.Types.URI (urlEncode)
+import Data.Text.Encoding         (encodeUtf8, decodeUtf8)
 
 writeModule :: FilePath -> RouteGroup -> IO ()
 writeModule outDir (RouteGroup model routes) = do
-  let mdl        = map toLower model
+  let mdl = T.unpack (T.toLower (T.pack model))
       moduleName = model ++ "Routes"
       filePath   = outDir </> moduleName ++ ".hs"
 
@@ -21,6 +22,8 @@ writeModule outDir (RouteGroup model routes) = do
         , ""
         , "import Data.Text (Text, (<>), intercalate)"
         , "import qualified Data.Text as T"
+        , "import Network.HTTP.Types.URI (urlEncode)"
+        , "import Data.Text.Encoding (encodeUtf8, decodeUtf8)"
         , ""
         , "basePath :: Text"
         , "basePath = \"/api/" <> T.pack mdl <> "\""
@@ -30,7 +33,7 @@ writeModule outDir (RouteGroup model routes) = do
         , ""
         , "query :: [(Text, Text)] -> Text"
         , "query [] = \"\""
-        , "query ps = \"?\" <> intercalate \"&\" [k <> \"=\" <> v | (k, v) <- ps]"
+        , "query ps = \"?\" <> intercalate \"&\" [k <> \"=\" <> decodeUtf8 (urlEncode (encodeUtf8 v)) | (k, v) <- ps]"
         , ""
         ]
 

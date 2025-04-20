@@ -70,6 +70,26 @@
   (major1) == 1 && (major2) <  4 || \
   (major1) == 1 && (major2) == 4 && (minor) <= 301)
 #endif /* MIN_VERSION_filepath */
+/* package http-types-0.12.4 */
+#ifndef VERSION_http_types
+#define VERSION_http_types "0.12.4"
+#endif /* VERSION_http_types */
+#ifndef MIN_VERSION_http_types
+#define MIN_VERSION_http_types(major1,major2,minor) (\
+  (major1) <  0 || \
+  (major1) == 0 && (major2) <  12 || \
+  (major1) == 0 && (major2) == 12 && (minor) <= 4)
+#endif /* MIN_VERSION_http_types */
+/* package scotty-0.22 */
+#ifndef VERSION_scotty
+#define VERSION_scotty "0.22"
+#endif /* VERSION_scotty */
+#ifndef MIN_VERSION_scotty
+#define MIN_VERSION_scotty(major1,major2,minor) (\
+  (major1) <  0 || \
+  (major1) == 0 && (major2) <  22 || \
+  (major1) == 0 && (major2) == 22 && (minor) <= 0)
+#endif /* MIN_VERSION_scotty */
 /* package template-haskell-2.20.0.0 */
 #ifndef VERSION_template_haskell
 #define VERSION_template_haskell "2.20.0.0"
@@ -90,6 +110,36 @@
   (major1) == 2 && (major2) <  0 || \
   (major1) == 2 && (major2) == 0 && (minor) <= 2)
 #endif /* MIN_VERSION_text */
+/* package transformers-0.6.1.0 */
+#ifndef VERSION_transformers
+#define VERSION_transformers "0.6.1.0"
+#endif /* VERSION_transformers */
+#ifndef MIN_VERSION_transformers
+#define MIN_VERSION_transformers(major1,major2,minor) (\
+  (major1) <  0 || \
+  (major1) == 0 && (major2) <  6 || \
+  (major1) == 0 && (major2) == 6 && (minor) <= 1)
+#endif /* MIN_VERSION_transformers */
+/* package wai-3.2.4 */
+#ifndef VERSION_wai
+#define VERSION_wai "3.2.4"
+#endif /* VERSION_wai */
+#ifndef MIN_VERSION_wai
+#define MIN_VERSION_wai(major1,major2,minor) (\
+  (major1) <  3 || \
+  (major1) == 3 && (major2) <  2 || \
+  (major1) == 3 && (major2) == 2 && (minor) <= 4)
+#endif /* MIN_VERSION_wai */
+/* package warp-3.4.7 */
+#ifndef VERSION_warp
+#define VERSION_warp "3.4.7"
+#endif /* VERSION_warp */
+#ifndef MIN_VERSION_warp
+#define MIN_VERSION_warp(major1,major2,minor) (\
+  (major1) <  3 || \
+  (major1) == 3 && (major2) <  4 || \
+  (major1) == 3 && (major2) == 4 && (minor) <= 7)
+#endif /* MIN_VERSION_warp */
 
 /* tool gcc-13 */
 #ifndef TOOL_VERSION_gcc

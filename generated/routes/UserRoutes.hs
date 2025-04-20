@@ -2,6 +2,8 @@ module UserRoutes (getAllUsers, getById, createUser, updateUser, deleteUser, sea
 
 import Data.Text (Text, (<>), intercalate)
 import qualified Data.Text as T
+import Network.HTTP.Types.URI (urlEncode)
+import Data.Text.Encoding (encodeUtf8, decodeUtf8)
 
 basePath :: Text
 basePath = "/api/user"
@@ -11,7 +13,7 @@ path segments = basePath <> "/" <> intercalate "/" segments
 
 query :: [(Text, Text)] -> Text
 query [] = ""
-query ps = "?" <> intercalate "&" [k <> "=" <> v | (k, v) <- ps]
+query ps = "?" <> intercalate "&" [k <> "=" <> decodeUtf8 (urlEncode (encodeUtf8 v)) | (k, v) <- ps]
 
 getAllUsers :: Text
 getAllUsers = path ["getAll"]

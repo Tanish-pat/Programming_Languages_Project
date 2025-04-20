@@ -1,7 +1,9 @@
 {-# LANGUAGE TemplateHaskell #-}
+{-# LANGUAGE DeriveGeneric #-}
 
 module ModelGen (generateModel, generateAllModels, writeModelToFile) where
 
+import GHC.Generics (Generic)
 import Language.Haskell.TH
 import Language.Haskell.TH.Syntax (Name, VarStrictType)  -- Add this import
 import Language.Haskell.TH.PprLib
@@ -34,7 +36,7 @@ generateModel typeName fields = do
                               ConT ftype)) fields
   let dataDef = DataD [] typeN [] Nothing
                   [RecC typeN fieldDecs]
-                  [DerivClause Nothing [ConT ''Show, ConT ''Eq, ConT ''Typeable]]
+                  [DerivClause Nothing [ConT ''Show, ConT ''Eq, ConT ''Typeable, ConT (mkName "GHC.Generics.Generic")]]
   return [dataDef]
 
 -- TH generator for multiple models
@@ -68,12 +70,20 @@ writeModelToFile typeName fields = do
   decs <- runQ $ generateModel typeName fields
   let modelCode = simplePpr (head decs)
       fileContent = unlines
-        [ "module " ++ typeName ++ " where"
+        [ "{-# LANGUAGE DeriveGeneric #-}"
+        , ""
+        , "module " ++ typeName ++ " where"
         , ""
         , "import Data.Typeable"
         , "import Prelude hiding (id)"
+        , "import Data.Text (Text)"
+        , "import GHC.Generics (Generic)"
+        , "import Data.Aeson (ToJSON, FromJSON)"
         , ""
         , modelCode
+        , ""
+        , "instance ToJSON " ++ typeName
+        , "instance FromJSON " ++ typeName
         ]
       targetDir = "generated/models"
       filePath = targetDir </> typeName ++ ".hs"
