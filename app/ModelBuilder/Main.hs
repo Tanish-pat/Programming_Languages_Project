@@ -9,8 +9,14 @@ import ModelRegistry (models)  -- this models is the runtime model data
 import ModelGen (generateAllModels, writeModelToFile)
 import qualified Data.Map.Strict as Map
 
+-- 👇 Import the schema + seed builder
+import SchemaSeedBuilder (genSchemaAndSeed)
+
+
 -- ✅ Use a different name in TH to avoid conflict
-$(generateAllModels ModelRegistry.models)
+-- ✅ Generate Haskell models + schema/seed.sql at compile time
+$(generateAllModels models)
+$(genSchemaAndSeed)  
 
 main :: IO ()
 main = do

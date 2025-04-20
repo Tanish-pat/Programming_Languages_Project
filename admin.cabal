@@ -60,6 +60,7 @@ library modelbuilder
   exposed-modules:
       ModelGen,
       ModelRegistry,
+      SchemaSeedBuilder
 
 -- Define the routebuilder library
 library routebuilder

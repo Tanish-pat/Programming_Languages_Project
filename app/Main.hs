@@ -5,7 +5,7 @@ import qualified RoutesBuilder.Main as RoutesBuilder (main)
 
 main :: IO ()
 main = do
-    putStrLn "Running ModelBuilder..."
+    putStrLn "Running ModelBuilder (includes schema + seed generation)..."
     ModelBuilder.main
     putStrLn "Running RouteBuilder..."
     RoutesBuilder.main
