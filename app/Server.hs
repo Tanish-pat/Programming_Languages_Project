@@ -17,7 +17,7 @@ import qualified Links.CategoryLinks as Category
 import qualified Links.ProductCategoryLinks as ProductCategory
 
 dbPath :: String
-dbPath = "database/AMAZON.db"
+dbPath = "database/INVENTORY.db"
 
 main :: IO ()
 main = do
@@ -86,7 +86,7 @@ main = do
 
 -- -- SQLite database path
 -- dbPath :: String
--- dbPath = "database/AMAZON.db"
+-- dbPath = "database/INVENTORY.db"
 
 -- main :: IO ()
 -- main = do

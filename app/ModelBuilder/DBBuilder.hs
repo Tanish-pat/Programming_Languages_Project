@@ -17,7 +17,7 @@ splitSQL = filter (not . T.null . T.strip) . T.splitOn ";"
 buildSQLiteDB :: IO ()
 buildSQLiteDB = do
     let dir = "database"
-    let dbPath = dir </> "AMAZON.db"
+    let dbPath = dir </> "INVENTORY.db"
     let schemaPath = dir </> "schema.sql"
     let seedPath = dir </> "seed.sql"
 
@@ -25,7 +25,7 @@ buildSQLiteDB = do
 
     dbExists <- doesFileExist dbPath
     when dbExists $ do
-        putStrLn "💣 Removing existing AMAZON.db to avoid constraint errors..."
+        putStrLn "💣 Removing existing INVENTORY.db to avoid constraint errors..."
         removeFile dbPath
 
     conn <- open dbPath

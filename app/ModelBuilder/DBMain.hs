@@ -6,5 +6,5 @@ import DBBuilder (buildSQLiteDB)
 
 main :: IO ()
 main = do
-    putStrLn "🚧 Building the AMAZON SQLite database..."
+    putStrLn "🚧 Building the INVENTORY SQLite database..."
     buildSQLiteDB

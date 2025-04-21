@@ -71,6 +71,7 @@ library routebuilder
     , filepath
     , http-types
     , scotty
+    , sqlite-simple
     , template-haskell
     , text
     , transformers
@@ -96,6 +97,7 @@ executable admin
     , containers
     , directory
     , filepath
+    , sqlite-simple
     , scotty
     , template-haskell
     , text
@@ -112,19 +114,19 @@ executable admin
 -- =====================================================
 -- Executable: tester (SQL Prompt CLI)
 -- =====================================================
-executable tester
-  main-is:           TesterMain.hs
-  hs-source-dirs:    app
-  other-modules:
-      DynamicSQLPrompt
-  build-depends:
-      base               >=4.15 && <4.19
-    , ansi-terminal
-    , containers
-    , haskeline
-    , text
-  ghc-options:        -Wall -v0 -w -dno-debug-output
-  default-language:   Haskell2010
+-- executable tester
+--   main-is:           TesterMain.hs
+--   hs-source-dirs:    app
+--   other-modules:
+--       DynamicSQLPrompt
+--   build-depends:
+--       base               >=4.15 && <4.19
+--     , ansi-terminal
+--     , containers
+--     , haskeline
+--     , text
+--   ghc-options:        -Wall -v0 -w -dno-debug-output
+--   default-language:   Haskell2010
 
 -- =====================================================
 -- Executable: server (Scotty API Server on Port 3000)
@@ -155,3 +157,24 @@ executable server
     , warp
   ghc-options:        -Wall -v0 -w -dno-debug-output
   default-language:   Haskell2010
+  other-modules:
+    Address
+    AddressRoutes
+
+
+-- =====================================================
+-- Executable: query-admin (SQL Prompt CLI)
+-- =====================================================
+
+
+executable query-admin
+  hs-source-dirs:      app
+  main-is:             QueryMain.hs
+  other-modules:       QueryPrompter
+  build-depends:
+    base >=4.7 && <5,
+    containers,
+    text,
+    sqlite-simple,
+    ansi-terminal
+  default-language:    Haskell2010

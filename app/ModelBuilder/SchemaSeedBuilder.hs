@@ -39,7 +39,7 @@ genSchemaAndSeed = do
     writeFile (dir </> "seed.sql")   seedSQL
 
     -- Recreate the SQLite database
-    let dbPath = dir </> "AMAZON.db"
+    let dbPath = dir </> "INVENTORY.db"
     conn <- open dbPath
 
     -- Drop existing tables (optional, no DROP DATABASE in SQLite)
