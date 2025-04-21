@@ -30,7 +30,7 @@ library modelbuilder
     , containers
     , directory
     , filepath
-    , sqlite-simple 
+    , sqlite-simple
     , scotty
     , template-haskell
     , text
@@ -131,9 +131,7 @@ executable tester
 -- =====================================================
 executable server
   main-is:           Server.hs
-  hs-source-dirs:    app
-  other-modules:
-      DynamicSQLPrompt
+  hs-source-dirs:    app generated/routes generated/models
   build-depends:
       base               >=4.14 && <5
     , aeson
@@ -144,7 +142,8 @@ executable server
     , io-streams
     , system-filepath
     , exceptions
-    , sqlite-simple       
+    , sqlite-simple
+    , http-types
     , scotty
     , text
     , bytestring
