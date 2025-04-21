@@ -8,7 +8,7 @@ import Data.Typeable (Typeable)
 
 models :: [(String, [(String, Name)])]
 models =
-  [ ("User",
+  [ ("Customer",
       [ ("id", ''Int)
       , ("name", ''T.Text)
       , ("email", ''T.Text)
@@ -24,16 +24,16 @@ models =
       , ("tags", ''T.Text)
       ])
 
-  , ("Order",
-      [ ("orderId", ''Int)
-      , ("userId", ''Int)
+  , ("Transaction",
+      [ ("transactionId", ''Int)
+      , ("customerId", ''Int)
       , ("total", ''Double)
       , ("status", ''T.Text)
       ])
 
   , ("Review",
       [ ("reviewId", ''Int)
-      , ("userId", ''Int)
+      , ("customerId", ''Int)
       , ("productId", ''T.Text)
       , ("rating", ''Int)
       , ("comment", ''T.Text)
@@ -41,7 +41,7 @@ models =
 
   , ("Address",
       [ ("addressId", ''Int)
-      , ("userId", ''Int)
+      , ("customerId", ''Int)
       , ("line1", ''T.Text)
       , ("line2", ''T.Text)
       , ("city", ''T.Text)
@@ -57,7 +57,7 @@ models =
 
   , ("Payment",
       [ ("paymentId", ''Int)
-      , ("orderId", ''Int)
+      , ("transactionId", ''Int)
       , ("amount", ''Double)
       , ("method", ''T.Text)
       , ("status", ''T.Text)
@@ -94,7 +94,7 @@ models =
 
 -- models :: [(String, [(String, Name)])]
 -- models =
---   [ ("User",
+--   [ ("Customer",
 --       [ ("id", ''Int)
 --       , ("name", ''String)
 --       , ("email", ''String)
@@ -110,16 +110,16 @@ models =
 --       , ("tags", ''String)
 --       ])
 
---   , ("Order",
---       [ ("orderId", ''Int)
---       , ("userId", ''Int)  -- foreign key
+--   , ("transaction",
+--       [ ("transactionId", ''Int)
+--       , ("customerId", ''Int)  -- foreign key
 --       , ("total", ''Double)
 --       , ("status", ''String)
 --       ])
 
 --   , ("Review",
 --       [ ("reviewId", ''Int)
---       , ("userId", ''Int)
+--       , ("customerId", ''Int)
 --       , ("productId", ''String)
 --       , ("rating", ''Int)
 --       , ("comment", ''String)
@@ -127,7 +127,7 @@ models =
 
 --   , ("Address",
 --       [ ("addressId", ''Int)
---       , ("userId", ''Int)
+--       , ("customerId", ''Int)
 --       , ("line1", ''String)
 --       , ("line2", ''String)
 --       , ("city", ''String)
@@ -143,7 +143,7 @@ models =
 
 --   , ("Payment",
 --       [ ("paymentId", ''Int)
---       , ("orderId", ''Int)
+--       , ("transactionId", ''Int)
 --       , ("amount", ''Double)
 --       , ("method", ''String)
 --       , ("status", ''String)

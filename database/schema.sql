@@ -1,73 +1,73 @@
-CREATE TABLE User (
+CREATE TABLE Customer (
   id INTEGER,
-  name TEXT,
-  email TEXT,
+  name VARCHAR(255),
+  email VARCHAR(255),
   age INTEGER,
   isActive BOOLEAN,
   PRIMARY KEY (id)
 );
 
 CREATE TABLE Product (
-  sku TEXT,
-  name TEXT,
-  description TEXT,
+  sku VARCHAR(255),
+  name VARCHAR(255),
+  description VARCHAR(255),
   price REAL,
-  tags TEXT,
+  tags VARCHAR(255),
   PRIMARY KEY (sku)
 );
 
-CREATE TABLE "Order" (
-  orderId INTEGER,
-  userId INTEGER,
+CREATE TABLE `Transaction` (
+  transactionId INTEGER,
+  customerId INTEGER,
   total REAL,
-  status TEXT,
-  PRIMARY KEY (orderId)
-  FOREIGN KEY (userId) REFERENCES User(id)
+  status VARCHAR(255),
+  PRIMARY KEY (TransactionId),
+  FOREIGN KEY (customerId) REFERENCES Customer(id)
 );
 
 CREATE TABLE Review (
   reviewId INTEGER,
-  userId INTEGER,
-  productId TEXT,
+  customerId INTEGER,
+  productId VARCHAR(255),
   rating INTEGER,
-  comment TEXT,
-  PRIMARY KEY (reviewId)
-  FOREIGN KEY (userId) REFERENCES User(id)
+  comment VARCHAR(255),
+  PRIMARY KEY (reviewId),
+  FOREIGN KEY (customerId) REFERENCES Customer(id),
   FOREIGN KEY (productId) REFERENCES Product(sku)
 );
 
 CREATE TABLE Address (
   addressId INTEGER,
-  userId INTEGER,
-  line1 TEXT,
-  line2 TEXT,
-  city TEXT,
-  state TEXT,
-  zipCode TEXT,
-  PRIMARY KEY (addressId)
-  FOREIGN KEY (userId) REFERENCES User(id)
+  customerId INTEGER,
+  line1 VARCHAR(255),
+  line2 VARCHAR(255),
+  city VARCHAR(255),
+  state VARCHAR(255),
+  zipCode VARCHAR(255),
+  PRIMARY KEY (addressId),
+  FOREIGN KEY (customerId) REFERENCES Customer(id)
 );
 
 CREATE TABLE Inventory (
-  productId TEXT,
+  productId VARCHAR(255),
   quantity INTEGER,
-  location TEXT,
-  PRIMARY KEY (productId)
+  location VARCHAR(255),
+  PRIMARY KEY (productId),
   FOREIGN KEY (productId) REFERENCES Product(sku)
 );
 
 CREATE TABLE Payment (
   paymentId INTEGER,
-  orderId INTEGER,
+  transactionId INTEGER,
   amount REAL,
-  method TEXT,
-  status TEXT,
-  PRIMARY KEY (paymentId)
-  FOREIGN KEY (orderId) REFERENCES "Order"(orderId)
+  method VARCHAR(255),
+  status VARCHAR(255),
+  PRIMARY KEY (paymentId),
+  FOREIGN KEY (TransactionId) REFERENCES `Transaction`(TransactionId)
 );
 
 CREATE TABLE Coupon (
-  couponCode TEXT,
+  couponCode VARCHAR(255),
   discount REAL,
   isActive BOOLEAN,
   PRIMARY KEY (couponCode)
@@ -75,16 +75,16 @@ CREATE TABLE Coupon (
 
 CREATE TABLE Category (
   categoryId INTEGER,
-  name TEXT,
-  description TEXT,
+  name VARCHAR(255),
+  description VARCHAR(255),
   PRIMARY KEY (categoryId)
 );
 
 CREATE TABLE ProductCategory (
-  productId TEXT,
+  productId VARCHAR(255),
   categoryId INTEGER,
-  PRIMARY KEY (productId, categoryId)
-  FOREIGN KEY (productId) REFERENCES Product(sku)
+  PRIMARY KEY (productId, categoryId),
+  FOREIGN KEY (productId) REFERENCES Product(sku),
   FOREIGN KEY (categoryId) REFERENCES Category(categoryId)
 );
 

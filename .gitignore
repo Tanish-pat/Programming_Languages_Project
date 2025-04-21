@@ -1,4 +1,3 @@
-/dist-newstyle
-/generated
-/database
-/dist-newstyle/cache
+/dist-newstyle/
+/generated/
+/database/

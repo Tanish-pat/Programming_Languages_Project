@@ -1,86 +1,148 @@
-cabal-version:      3.0
-name:               admin
-version:            0.1.0.0
-license:            BSD-3-Clause
-license-file:       LICENSE
-author:             Tanish
-maintainer:         Tanish.Pathania@iiitb.ac.in
-build-type:         Simple
-extra-doc-files:    CHANGELOG.md
+cabal-version:       3.0
+name:                admin
+version:             0.1.0.0
+license:             BSD-3-Clause
+license-file:        LICENSE
+author:              Hemang
+maintainer:          Hemang.Seth@iiitb.ac.in
+build-type:          Simple
 
+-- =====================================================
+-- Global Warnings
+-- =====================================================
 common warnings
-    ghc-options: -Wall -v0 -w -dno-debug-output
+  ghc-options: -Wall -v0 -w -dno-debug-output
 
--- Define the admin executable that will run modelbuilder and routebuilder
-executable admin
-    main-is:          Main.hs
-    hs-source-dirs:   app
-    build-depends: base >=4.15 && <4.16
-                    , aeson >=1.5
-                    , bytestring >=0.11.5.4
-                    , modelbuilder
-                    , routebuilder
-                    , template-haskell
-                    , containers
-                    , filepath
-                    , directory
-                    , scotty
-                    , text
-                    , aeson
-                    , transformers
-                    , wai
-                    , warp
-                    , http-types
-    ghc-options: -v0 -w -dno-debug-output
-    default-language: Haskell2010
-
-    -- This tells Cabal to include modelbuilder and routebuilder modules
-    other-modules:
-        ModelBuilder.Main,
-        RoutesBuilder.Main
-
--- Define the modelbuilder library
+-- =====================================================
+-- Library: modelbuilder
+-- =====================================================
 library modelbuilder
-  hs-source-dirs:      app/ModelBuilder
-  build-depends:
-      base >=4.15 && <4.16,
-      aeson >=1.5,
-      bytestring >=0.11.5.4,
-      template-haskell,
-      directory,
-      filepath,
-      containers,
-      text,
-      scotty,
-      transformers,
-      wai,
-      warp
-  ghc-options: -v0 -w -dno-debug-output
-  default-language:    Haskell2010
+  hs-source-dirs:    app/ModelBuilder
   exposed-modules:
-      ModelGen,
-      ModelRegistry,
-      SchemaSeedBuilder
+      ModelGen
+    , ModelRegistry
+    , SchemaSeedBuilder
+  build-depends:
+      base               >=4.15 && <4.16
+    , aeson              >=1.5
+    , bytestring
+    , containers
+    , directory
+    , filepath
+    , mysql
+    , mysql-simple       >=0.4
+    , scotty
+    , template-haskell
+    , text
+    , transformers
+    , wai
+    , wai-cors
+    , warp
+  default-language:   Haskell2010
+  ghc-options:        -Wall -v0 -w -dno-debug-output
 
--- Define the routebuilder library
+-- =====================================================
+-- Library: routebuilder
+-- =====================================================
 library routebuilder
-  hs-source-dirs:      app/RoutesBuilder
-  build-depends:
-      base >=4.15 && <4.16,
-      http-types,
-      aeson >=1.5,
-      bytestring >=0.11.5.4,
-      template-haskell,
-      directory,
-      filepath,
-      containers,
-      text,
-      scotty,
-      transformers,
-      wai,
-      warp
-  ghc-options: -v0 -w -dno-debug-output
-  default-language:    Haskell2010
+  hs-source-dirs:    app/RoutesBuilder
   exposed-modules:
-      RouteGen,
-      RouteRegistry
+      RouteGen
+    , RouteRegistry
+  build-depends:
+      base               >=4.15 && <4.16
+    , aeson              >=1.5
+    , bytestring
+    , containers
+    , directory
+    , filepath
+    , http-types
+    , scotty
+    , template-haskell
+    , text
+    , transformers
+    , wai
+    , wai-cors
+    , warp
+  default-language:   Haskell2010
+  ghc-options:        -Wall -v0 -w -dno-debug-output
+
+-- =====================================================
+-- Executable: admin (Backend Server + Generation)
+-- =====================================================
+executable admin
+  main-is:           Main.hs
+  hs-source-dirs:    app
+  other-modules:
+      ModelBuilder.Main
+    , RoutesBuilder.Main
+  build-depends:
+      base               >=4.15 && <4.16
+    , aeson              >=1.5
+    , bytestring         >=0.11.5.4
+    , containers
+    , directory
+    , filepath
+    , mysql              >=0.1
+    , mysql-simple       >=0.4
+    , scotty
+    , template-haskell
+    , text
+    , transformers
+    , wai
+    , wai-cors
+    , warp
+    , http-types
+    , modelbuilder
+    , routebuilder
+  ghc-options:        -Wall -v0 -w -dno-debug-output
+  default-language:   Haskell2010
+
+-- =====================================================
+-- Executable: tester (SQL Prompt CLI)
+-- =====================================================
+executable tester
+  main-is:           TesterMain.hs
+  hs-source-dirs:    app
+  other-modules:
+      DynamicSQLPrompt
+  build-depends:
+      base               >=4.15 && <4.16
+    , ansi-terminal
+    , containers
+    , haskeline
+    , text
+  ghc-options:        -Wall -v0 -w -dno-debug-output
+  default-language:   Haskell2010
+
+-- =====================================================
+-- Executable: server (Scotty API Server on Port 3000)
+-- =====================================================
+executable server
+  main-is:           Server.hs
+  hs-source-dirs:    app
+  other-modules:
+      DynamicSQLPrompt
+  build-depends:
+      base               >=4.14 && <5
+    , aeson
+    , ansi-terminal
+    , bytestring
+    , containers
+    , directory
+    , io-streams
+    , system-filepath
+    , exceptions
+    , mysql              >=0.1
+    , mysql-simple       >=0.4.9
+    , scotty
+    , text
+    , bytestring
+    , time
+    , transformers
+    , vector             >=0.12
+    , wai
+    , wai-extra
+    , warp
+  ghc-options:        -Wall -v0 -w -dno-debug-output
+  default-language:   Haskell2010

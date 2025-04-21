@@ -22,7 +22,7 @@ capitalize :: String -> String
 capitalize (x:xs) = toUpper x : xs
 capitalize [] = []
 
--- Generate field name: User + id → userId
+-- Generate field name: User + id → customerId
 fieldName :: String -> String -> Name
 fieldName modelName field = mkName $ lowerFirst modelName ++ capitalize field
 

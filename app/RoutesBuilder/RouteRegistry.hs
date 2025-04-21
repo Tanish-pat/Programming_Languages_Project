@@ -24,13 +24,13 @@ data RouteGroup = RouteGroup
 routeRegistry :: [RouteGroup]
 routeRegistry =
     [
-    RouteGroup "User"
-        [ RouteSpecExtended "getAllUsers"     "GET"    [Static "getAll"]                  []
+    RouteGroup "Customer"
+        [ RouteSpecExtended "getAllCustomers"     "GET"    [Static "getAll"]                  []
         , RouteSpecExtended "getById"         "GET"    [Static "getById", Dynamic "id"]   []
-        , RouteSpecExtended "createUser"      "POST"   [Static "create"]                  []
-        , RouteSpecExtended "updateUser"      "PUT"    [Static "update", Dynamic "id"]    []
-        , RouteSpecExtended "deleteUser"      "DELETE" [Static "delete", Dynamic "id"]    []
-        , RouteSpecExtended "searchUsers"     "GET"    [Static "search"]                  ["name", "age"]
+        , RouteSpecExtended "createCustomer"      "POST"   [Static "create"]                  []
+        , RouteSpecExtended "updateCustomer"      "PUT"    [Static "update", Dynamic "id"]    []
+        , RouteSpecExtended "deleteCustomer"      "DELETE" [Static "delete", Dynamic "id"]    []
+        , RouteSpecExtended "searchCustomers"     "GET"    [Static "search"]                  ["name", "age"]
         ],
 
     RouteGroup "Product"
@@ -42,13 +42,13 @@ routeRegistry =
         , RouteSpecExtended "searchProducts"  "GET"    [Static "search"]                     ["name", "tags"]
         ],
 
-    RouteGroup "Order"
-        [ RouteSpecExtended "getAllOrders"    "GET"    [Static "getAll"]                        []
-        , RouteSpecExtended "getByOrderId"    "GET"    [Static "getById", Dynamic "orderId"]     []
-        , RouteSpecExtended "createOrder"     "POST"   [Static "create"]                         []
-        , RouteSpecExtended "updateOrder"     "PUT"    [Static "update", Dynamic "orderId"]      []
-        , RouteSpecExtended "deleteOrder"     "DELETE" [Static "delete", Dynamic "orderId"]      []
-        , RouteSpecExtended "getOrdersByUser" "GET"    [Static "byUser", Dynamic "userId"]       []
+    RouteGroup "Transaction"
+        [ RouteSpecExtended "getAllTransactions"    "GET"    [Static "getAll"]                        []
+        , RouteSpecExtended "getByTransactionId"    "GET"    [Static "getById", Dynamic "transactionId"]     []
+        , RouteSpecExtended "createTransaction"     "POST"   [Static "create"]                         []
+        , RouteSpecExtended "updateTransaction"     "PUT"    [Static "update", Dynamic "transactionId"]      []
+        , RouteSpecExtended "deleteTransaction"     "DELETE" [Static "delete", Dynamic "transactionId"]      []
+        , RouteSpecExtended "getTransactionsByCustomer" "GET"    [Static "byCustomer", Dynamic "customerId"]       []
         ],
 
     RouteGroup "Review"
@@ -66,7 +66,7 @@ routeRegistry =
         , RouteSpecExtended "createAddress"   "POST"   [Static "create"]                             []
         , RouteSpecExtended "updateAddress"   "PUT"    [Static "update", Dynamic "addressId"]        []
         , RouteSpecExtended "deleteAddress"   "DELETE" [Static "delete", Dynamic "addressId"]        []
-        , RouteSpecExtended "getByUserId"     "GET"    [Static "byUser", Dynamic "userId"]           []
+        , RouteSpecExtended "getByCustomerId"     "GET"    [Static "byCustomer", Dynamic "customerId"]           []
         ],
 
     RouteGroup "Inventory"
@@ -82,7 +82,7 @@ routeRegistry =
         , RouteSpecExtended "createPayment"   "POST"   [Static "create"]                             []
         , RouteSpecExtended "updatePayment"   "PUT"    [Static "update", Dynamic "paymentId"]        []
         , RouteSpecExtended "deletePayment"   "DELETE" [Static "delete", Dynamic "paymentId"]        []
-        , RouteSpecExtended "getPaymentsByOrder" "GET" [Static "byOrder", Dynamic "orderId"]         []
+        , RouteSpecExtended "getPaymentsByTransaction" "GET" [Static "byTransaction", Dynamic "transactionId"]         []
         ],
 
     RouteGroup "Coupon"
