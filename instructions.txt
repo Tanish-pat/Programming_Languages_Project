@@ -1,0 +1,8 @@
+cabal clean
+delete everything the database and the generated folder
+then cabal build all
+cabal run admin
+cabal run dbbuilder
+cabal run tester #NOTE - for demonstrational run time meta purposes
+cabal run server
+go to the local host 3000
