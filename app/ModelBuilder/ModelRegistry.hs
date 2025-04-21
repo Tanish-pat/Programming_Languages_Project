@@ -24,13 +24,6 @@ models =
       , ("tags", ''T.Text)
       ])
 
-  , ("Transaction",
-      [ ("transactionId", ''Int)
-      , ("customerId", ''Int)
-      , ("total", ''Double)
-      , ("status", ''T.Text)
-      ])
-
   , ("Review",
       [ ("reviewId", ''Int)
       , ("customerId", ''Int)
@@ -57,7 +50,6 @@ models =
 
   , ("Payment",
       [ ("paymentId", ''Int)
-      , ("transactionId", ''Int)
       , ("amount", ''Double)
       , ("method", ''T.Text)
       , ("status", ''T.Text)

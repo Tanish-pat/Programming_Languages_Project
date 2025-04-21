@@ -42,14 +42,7 @@ routeRegistry =
         , RouteSpecExtended "searchProducts"  "GET"    [Static "search"]                     ["name", "tags"]
         ],
 
-    RouteGroup "Transaction"
-        [ RouteSpecExtended "getAllTransactions"    "GET"    [Static "getAll"]                        []
-        , RouteSpecExtended "getByTransactionId"    "GET"    [Static "getById", Dynamic "transactionId"]     []
-        , RouteSpecExtended "createTransaction"     "POST"   [Static "create"]                         []
-        , RouteSpecExtended "updateTransaction"     "PUT"    [Static "update", Dynamic "transactionId"]      []
-        , RouteSpecExtended "deleteTransaction"     "DELETE" [Static "delete", Dynamic "transactionId"]      []
-        , RouteSpecExtended "getTransactionsByCustomer" "GET"    [Static "byCustomer", Dynamic "customerId"]       []
-        ],
+
 
     RouteGroup "Review"
         [ RouteSpecExtended "getAllReviews"   "GET"    [Static "getAll"]                           []
@@ -82,7 +75,6 @@ routeRegistry =
         , RouteSpecExtended "createPayment"   "POST"   [Static "create"]                             []
         , RouteSpecExtended "updatePayment"   "PUT"    [Static "update", Dynamic "paymentId"]        []
         , RouteSpecExtended "deletePayment"   "DELETE" [Static "delete", Dynamic "paymentId"]        []
-        , RouteSpecExtended "getPaymentsByTransaction" "GET" [Static "byTransaction", Dynamic "transactionId"]         []
         ],
 
     RouteGroup "Coupon"

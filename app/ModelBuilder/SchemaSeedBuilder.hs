@@ -9,7 +9,7 @@ import Language.Haskell.TH.Syntax
 import qualified Data.Text as T
 import System.Directory (createDirectoryIfMissing)
 import System.FilePath ((</>))
-import Database.MySQL.Simple
+import Database.SQLite.Simple
 import qualified Data.ByteString.Char8 as BS
 
 import ModelRegistry (models)
@@ -26,15 +26,6 @@ splitStatements = filter (not . null) . map trim . splitOn ';'
         f _ _ = [[]]
     trim = T.unpack . T.strip . T.pack
 
--- 👇 DB Config
-mysqlConnectInfo :: ConnectInfo
-mysqlConnectInfo = defaultConnectInfo {
-    connectHost     = "localhost",
-    connectUser     = "root",
-    connectPassword = "Khyati1998",
-    connectDatabase = ""
-  }
-
 -- 👇 Template Haskell entry point
 genSchemaAndSeed :: Q [Dec]
 genSchemaAndSeed = do
@@ -47,11 +38,12 @@ genSchemaAndSeed = do
     writeFile (dir </> "schema.sql") schemaSQL
     writeFile (dir </> "seed.sql")   seedSQL
 
-    conn <- connect mysqlConnectInfo
-    execute_ conn "DROP DATABASE IF EXISTS AMAZON"
-    execute_ conn "CREATE DATABASE AMAZON"
-    execute_ conn "USE AMAZON"
+    -- Recreate the SQLite database
+    let dbPath = dir </> "AMAZON.db"
+    conn <- open dbPath
 
+    -- Drop existing tables (optional, no DROP DATABASE in SQLite)
+    -- Execute schema and seed
     mapM_ (execute_ conn . fromString) (splitStatements schemaSQL)
     mapM_ (execute_ conn . fromString) (splitStatements seedSQL)
 
@@ -66,7 +58,7 @@ generateSchema = concatMap tableToSQL
     commaSepLines xs = unlines (map (++ ",") (init xs) ++ [last xs])
 
     tableToSQL (name, cols) =
-      "CREATE TABLE " ++ quote name ++ " (\n" ++
+      "CREATE TABLE IF NOT EXISTS " ++ quote name ++ " (\n" ++
       commaSepLines (map columnLine cols ++ constraints name cols) ++
       ");\n\n"
 
@@ -75,22 +67,17 @@ generateSchema = concatMap tableToSQL
 
     mapType t
       | t == ''Int    = "INTEGER"
-      | t == ''T.Text = "VARCHAR(255)"
+      | t == ''T.Text = "TEXT"
       | t == ''Double = "REAL"
       | t == ''Bool   = "BOOLEAN"
       | otherwise     = "TEXT"
 
-    quote "Transaction" = "`Transaction`"
-    quote n             = n
+    quote n = "\"" ++ n ++ "\""
 
     constraints "Customer" _ =
       ["  PRIMARY KEY (id)"]
     constraints "Product" _ =
       ["  PRIMARY KEY (sku)"]
-    constraints "Transaction" _ =
-      [ "  PRIMARY KEY (TransactionId)"
-      , "  FOREIGN KEY (customerId) REFERENCES Customer(id)"
-      ]
     constraints "Review" _ =
       [ "  PRIMARY KEY (reviewId)"
       , "  FOREIGN KEY (customerId) REFERENCES Customer(id)"
@@ -106,7 +93,6 @@ generateSchema = concatMap tableToSQL
       ]
     constraints "Payment" _ =
       [ "  PRIMARY KEY (paymentId)"
-      , "  FOREIGN KEY (TransactionId) REFERENCES `Transaction`(TransactionId)"
       ]
     constraints "Coupon" _ =
       [ "  PRIMARY KEY (couponCode)"
@@ -139,13 +125,6 @@ generateSeed models = unlines $ concatMap tableSeed models
       , "INSERT INTO Product VALUES ('SKU004', 'Basmati Rice', 'Long grain rice', 90.0, 'grain');"
       , "INSERT INTO Product VALUES ('SKU005', 'Pickle', 'Mango pickle jar', 60.0, 'condiment');"
       ]
-    tableSeed ("Transaction", _) =
-      [ "INSERT INTO Transaction VALUES (1001, 1, 230.0, 'Delivered');"
-      , "INSERT INTO Transaction VALUES (1002, 2, 150.0, 'Processing');"
-      , "INSERT INTO Transaction VALUES (1003, 3, 75.0, 'Shipped');"
-      , "INSERT INTO Transaction VALUES (1004, 1, 120.0, 'Cancelled');"
-      , "INSERT INTO Transaction VALUES (1005, 5, 200.0, 'Delivered');"
-      ]
     tableSeed ("Review", _) =
       [ "INSERT INTO Review VALUES (1, 1, 'SKU001', 5, 'Amazing tea!');"
       , "INSERT INTO Review VALUES (2, 2, 'SKU002', 4, 'Loved the spices');"
@@ -168,11 +147,11 @@ generateSeed models = unlines $ concatMap tableSeed models
       , "INSERT INTO Inventory VALUES ('SKU005', 90, 'Hyderabad');"
       ]
     tableSeed ("Payment", _) =
-      [ "INSERT INTO Payment VALUES (501, 1001, 230.0, 'UPI', 'Completed');"
-      , "INSERT INTO Payment VALUES (502, 1002, 150.0, 'Credit Card', 'Pending');"
-      , "INSERT INTO Payment VALUES (503, 1003, 75.0, 'NetBanking', 'Completed');"
-      , "INSERT INTO Payment VALUES (504, 1004, 120.0, 'UPI', 'Failed');"
-      , "INSERT INTO Payment VALUES (505, 1005, 200.0, 'Cash on Delivery', 'Completed');"
+      [ "INSERT INTO Payment VALUES (501, 230.0, 'UPI', 'Completed');"
+      , "INSERT INTO Payment VALUES (502, 150.0, 'Credit Card', 'Pending');"
+      , "INSERT INTO Payment VALUES (503, 75.0, 'NetBanking', 'Completed');"
+      , "INSERT INTO Payment VALUES (504, 120.0, 'UPI', 'Failed');"
+      , "INSERT INTO Payment VALUES (505, 200.0, 'Cash on Delivery', 'Completed');"
       ]
     tableSeed ("Coupon", _) =
       [ "INSERT INTO Coupon VALUES ('NEWcustomer10', 10.0, TRUE);"

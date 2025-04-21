@@ -1,87 +1,76 @@
-CREATE TABLE Customer (
+CREATE TABLE IF NOT EXISTS "Customer" (
   id INTEGER,
-  name VARCHAR(255),
-  email VARCHAR(255),
+  name TEXT,
+  email TEXT,
   age INTEGER,
   isActive BOOLEAN,
   PRIMARY KEY (id)
 );
 
-CREATE TABLE Product (
-  sku VARCHAR(255),
-  name VARCHAR(255),
-  description VARCHAR(255),
+CREATE TABLE IF NOT EXISTS "Product" (
+  sku TEXT,
+  name TEXT,
+  description TEXT,
   price REAL,
-  tags VARCHAR(255),
+  tags TEXT,
   PRIMARY KEY (sku)
 );
 
-CREATE TABLE `Transaction` (
-  transactionId INTEGER,
-  customerId INTEGER,
-  total REAL,
-  status VARCHAR(255),
-  PRIMARY KEY (TransactionId),
-  FOREIGN KEY (customerId) REFERENCES Customer(id)
-);
-
-CREATE TABLE Review (
+CREATE TABLE IF NOT EXISTS "Review" (
   reviewId INTEGER,
   customerId INTEGER,
-  productId VARCHAR(255),
+  productId TEXT,
   rating INTEGER,
-  comment VARCHAR(255),
+  comment TEXT,
   PRIMARY KEY (reviewId),
   FOREIGN KEY (customerId) REFERENCES Customer(id),
   FOREIGN KEY (productId) REFERENCES Product(sku)
 );
 
-CREATE TABLE Address (
+CREATE TABLE IF NOT EXISTS "Address" (
   addressId INTEGER,
   customerId INTEGER,
-  line1 VARCHAR(255),
-  line2 VARCHAR(255),
-  city VARCHAR(255),
-  state VARCHAR(255),
-  zipCode VARCHAR(255),
+  line1 TEXT,
+  line2 TEXT,
+  city TEXT,
+  state TEXT,
+  zipCode TEXT,
   PRIMARY KEY (addressId),
   FOREIGN KEY (customerId) REFERENCES Customer(id)
 );
 
-CREATE TABLE Inventory (
-  productId VARCHAR(255),
+CREATE TABLE IF NOT EXISTS "Inventory" (
+  productId TEXT,
   quantity INTEGER,
-  location VARCHAR(255),
+  location TEXT,
   PRIMARY KEY (productId),
   FOREIGN KEY (productId) REFERENCES Product(sku)
 );
 
-CREATE TABLE Payment (
+CREATE TABLE IF NOT EXISTS "Payment" (
   paymentId INTEGER,
-  transactionId INTEGER,
   amount REAL,
-  method VARCHAR(255),
-  status VARCHAR(255),
-  PRIMARY KEY (paymentId),
-  FOREIGN KEY (TransactionId) REFERENCES `Transaction`(TransactionId)
+  method TEXT,
+  status TEXT,
+  PRIMARY KEY (paymentId)
 );
 
-CREATE TABLE Coupon (
-  couponCode VARCHAR(255),
+CREATE TABLE IF NOT EXISTS "Coupon" (
+  couponCode TEXT,
   discount REAL,
   isActive BOOLEAN,
   PRIMARY KEY (couponCode)
 );
 
-CREATE TABLE Category (
+CREATE TABLE IF NOT EXISTS "Category" (
   categoryId INTEGER,
-  name VARCHAR(255),
-  description VARCHAR(255),
+  name TEXT,
+  description TEXT,
   PRIMARY KEY (categoryId)
 );
 
-CREATE TABLE ProductCategory (
-  productId VARCHAR(255),
+CREATE TABLE IF NOT EXISTS "ProductCategory" (
+  productId TEXT,
   categoryId INTEGER,
   PRIMARY KEY (productId, categoryId),
   FOREIGN KEY (productId) REFERENCES Product(sku),
