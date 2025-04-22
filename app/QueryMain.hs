@@ -1,16 +1,40 @@
 {-# LANGUAGE OverloadedStrings #-}
 module Main where
+import qualified QueryPrompter as QP
 
 import Database.SQLite.Simple
 import Database.SQLite.Simple.FromRow
 import Database.SQLite.Simple.Internal (Field(Field))
 import Data.String (fromString)
+import qualified Data.Map as M
 import QueryPrompter
+import Control.Exception (SomeException, try)
 import System.Console.ANSI
 import Control.Monad (unless)
 import Data.Text (Text)
 import qualified Data.Text as T
 import Text.Printf (printf)
+import qualified Data.Map as M
+import Data.Map (Map)
+
+
+
+tableCols :: Map Table [String]
+tableCols = M.fromList
+  [ (Customer, ["id", "name", "email", "age", "isPrime"])
+  , (Product, ["id", "name", "description", "price", "stock"])
+  , (Review, ["id", "customerId", "productId", "rating", "comment"])
+  , (Address, ["id", "customerId", "street", "city", "zip"])
+  , (Inventory, ["id", "productId", "warehouse", "quantity"])
+  , (Payment, ["id", "customerId", "amount", "method", "status"])
+  , (Coupon, ["id", "code", "discount", "expiry"])
+  , (Category, ["id", "name"])
+  , (ProductCategory, ["productId", "categoryId"])
+  ]
+
+
+-- type Table = String
+
 
 main :: IO ()
 main = do
@@ -22,56 +46,103 @@ main = do
   putStrLn =<< center "  ======================================"
   setSGR [Reset]
 
+  putStrLn "\nPress Enter to continue..."
+  _ <- getLine
   conn <- open "database/INVENTORY.db"
   loop conn
   close conn
 
+
+
 loop :: Connection -> IO ()
 loop conn = do
-  tbl <- promptTable
-  op  <- promptOperation
-  kvs <- promptValues tbl op
+  mtbl <- promptTable
+  case mtbl of
+    Nothing -> do
+      setSGR [SetColor Foreground Vivid Red]
+      putStrLn "\nExiting... Goodbye!"
+      setSGR [Reset]
+    Just tbl -> do
+      op <- promptOperation
+      kvs <- promptValues tbl op
+      let sql = generateSQL tbl op kvs
 
-  let sql = generateSQL tbl op kvs
-  setSGR [SetColor Foreground Vivid Yellow]
-  putStrLn $ "\n> " ++ sql
-  setSGR [Reset]
+      putStrLn ""
+      setSGR [SetColor Foreground Vivid Yellow]
+      putStrLn $ "Running SQL: " ++ sql
+      setSGR [Reset]
 
-  case op of
-    GetAll   -> queryAndPrint conn sql
-    GetByID  -> queryAndPrint conn sql
-    _        -> execute_ conn (Query $ fromString sql) >> putStrLn "✔ OK"
+      result <- try $ case op of
+        Insert -> do
+          execute_ conn (fromString sql)
+          putStrLn "✅ Inserted successfully."
 
-  setSGR [SetColor Foreground Vivid Magenta]
-  putStrLn "\nDo another? (y/n)"
-  setSGR [Reset]
-  again <- getLine
-  unless (again `elem` ["n","N"]) (loop conn)
+        Update -> do
+          execute_ conn (fromString sql)
+          rows <- changes conn
+          if rows == 0
+            then putStrLn "❌ Update failed: Record not found."
+            else putStrLn "✅ Updated successfully."
 
--- | run a SELECT and dump each row nicely
-queryAndPrint :: Connection -> String -> IO ()
-queryAndPrint conn sql = do
-  rows <- query_ conn (Query $ fromString sql) :: IO [[SQLData]]
-  mapM_ (putStrLn . formatRow) rows
+        Delete -> do
+          execute_ conn (fromString sql)
+          rows <- changes conn
+          if rows == 0
+            then putStrLn "❌ Delete failed: Record not found."
+            else putStrLn "✅ Deleted successfully."
 
--- | cleanly format a single row of SQLData with types and aligned spacing
-formatRow :: [SQLData] -> String
-formatRow fields =
-  let render val = case val of
-        SQLInteger i -> padRight 25 (show i ++ " (Int)")
-        SQLFloat f   -> padRight 25 (show f ++ " (Float)")
-        SQLText t    -> padRight 25 (T.unpack t ++ " (Text)")
-        SQLBlob b    -> padRight 25 (show b ++ " (Blob)")
-        SQLNull      -> padRight 25 "NULL (Null)"
-  in "  " ++ unwords (map render fields)
+        GetByID -> do
+          rows <- query_ conn (fromString sql) :: IO [[SQLData]]
+          if null rows
+            then putStrLn "❌ Record not found."
+            else prettyPrintRows tbl rows
 
--- | pad a string to fixed width
+        GetAll -> do
+          rows <- query_ conn (fromString sql) :: IO [[SQLData]]
+          if null rows
+            then putStrLn "ℹ️  No records found."
+            else prettyPrintRows tbl rows
+
+      case result of
+        Left err -> do
+          setSGR [SetColor Foreground Vivid Red]
+          putStrLn $ "❌ Error: " ++ show (err :: SomeException)
+          setSGR [Reset]
+        Right _ -> return ()
+
+      -- Ask user if they want to continue
+      setSGR [SetColor Foreground Vivid Magenta]
+      putStrLn "\nDo another? (y/n)"
+      setSGR [Reset]
+      again <- getLine
+      unless (again `elem` ["n", "N"]) (loop conn)
+
+--------------------------------------------------------------------------------
+-- Utility Functions
+
+prettyPrintRows :: Table -> [[SQLData]] -> IO ()
+prettyPrintRows tbl rows = do
+  let cols = tableCols M.! tbl
+  mapM_ (printRow cols) rows
+  where
+    formatValue :: SQLData -> String
+    formatValue (SQLInteger i) = show i
+    formatValue (SQLFloat f)   = show f
+    formatValue (SQLText t)    = T.unpack t
+    formatValue SQLNull        = "NULL"
+    formatValue val            = show val
+
+    printRow :: [String] -> [SQLData] -> IO ()
+    printRow colNames values = do
+      let pairs = zip colNames values
+          rowStr = unwords [c ++ ": " ++ formatValue v | (c,v) <- pairs]
+      putStrLn rowStr
+
 padRight :: Int -> String -> String
 padRight n s = s ++ replicate (n - length s) ' '
 
--- | Center-align text in a 45-character terminal
 center :: String -> IO String
 center str = do
-  let width = 80 -- Use full width of most terminals
+  let width = 80
       pad = replicate ((width - length str) `div` 2) ' '
   return $ pad ++ str

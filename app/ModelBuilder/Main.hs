@@ -1,3 +1,4 @@
+{-# LANGUAGE DuplicateRecordFields #-}
 {-# LANGUAGE TemplateHaskell #-}
 {-# LANGUAGE DeriveGeneric #-}
 
@@ -16,7 +17,7 @@ import SchemaSeedBuilder (genSchemaAndSeed)
 -- ✅ Use a different name in TH to avoid conflict
 -- ✅ Generate Haskell models + schema/seed.sql at compile time
 $(generateAllModels models)
-$(genSchemaAndSeed)  
+$(genSchemaAndSeed)
 
 main :: IO ()
 main = do

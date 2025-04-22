@@ -27,7 +27,7 @@ writeModule outDir (RouteGroup model routes) = do
         , "import Data.Text.Encoding (encodeUtf8, decodeUtf8)"
         , ""
         , "basePath :: Text"
-        , "basePath = T.pack \"/api/" <> T.pack mdl <> "\""
+        , "basePath = T.pack \"/" <> T.pack mdl <> "\""
         , ""
         , "path :: [Text] -> Text"
         , "path segments = basePath <> T.pack \"/\" <> intercalate (T.pack \"/\") segments"

@@ -34,16 +34,21 @@ data Operation = Insert | Update | Delete | GetAll | GetByID
   deriving (Show, Read, Enum, Bounded, Eq)
 
 -- | Human‑friendly table menu
-promptTable :: IO Table
+-- | Human‑friendly table menu with an Exit option
+promptTable :: IO (Maybe Table)
 promptTable = do
   setSGR [SetColor Foreground Vivid Cyan]
   putStrLn "Select a table:"
-  mapM_ (\(i,t) -> putStrLn $ show i ++ ". " ++ show t) (zip [1..] allTables)
+  mapM_ (\(i, t) -> putStrLn $ show i ++ ". " ++ show t) (zip [1..] allTables)
+  putStrLn $ show (length allTables + 1) ++ ". Exit"
   setSGR [Reset]
   idx <- readLn
-  return $ allTables !! (idx-1)
+  if idx == length allTables + 1
+    then return Nothing
+    else return $ Just (allTables !! (idx - 1))
   where
     allTables = [minBound..maxBound] :: [Table]
+
 
 -- | Human‑friendly operation menu
 promptOperation :: IO Operation

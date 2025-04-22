@@ -22,7 +22,7 @@ library modelbuilder
       ModelGen
     , ModelRegistry
     , SchemaSeedBuilder
-    , DBBuilder
+  
   build-depends:
       base               >=4.15 && <4.19
     , aeson              >=1.5
@@ -133,7 +133,10 @@ executable admin
 -- =====================================================
 executable server
   main-is:           Server.hs
-  hs-source-dirs:    app generated/routes generated/models
+  hs-source-dirs:
+    - app
+    - generated/routes
+    - generated/models
   build-depends:
       base               >=4.14 && <5
     , aeson
@@ -158,9 +161,15 @@ executable server
   ghc-options:        -Wall -v0 -w -dno-debug-output
   default-language:   Haskell2010
   other-modules:
-    Address
-    AddressRoutes
-
+    Address,AddressRoutes,
+    Category,CategoryRoutes,
+    Coupon,CouponRoutes,
+    Customer,CustomerRoutes,
+    Inventory,InventoryRoutes,
+    Payment,PaymentRoutes,
+    ProductCategory,ProductCategoryRoutes,
+    Product,ProductRoutes,
+    Review,ReviewRoutes
 
 -- =====================================================
 -- Executable: query-admin (SQL Prompt CLI)

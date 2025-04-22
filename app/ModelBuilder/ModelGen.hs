@@ -1,3 +1,4 @@
+{-# LANGUAGE DuplicateRecordFields #-}
 {-# LANGUAGE TemplateHaskell #-}
 {-# LANGUAGE DeriveGeneric #-}
 
@@ -65,10 +66,42 @@ simplePpr (DataD _ tName _ _ [RecC _ fields] [DerivClause _ derived]) =
     punctuateComma (x:xs) = x : map (", " ++) xs
 simplePpr _ = error "Unsupported declaration"
 
+-- writeModelToFile :: String -> [(String, Name)] -> IO ()
+-- writeModelToFile modelName fields = do
+--   decs <- runQ $ generateModel modelName fields
+--   let modelCode = simplePpr (head decs)
+--       fileContent = unlines
+--         [ "{-# LANGUAGE DeriveGeneric #-}"
+--         , ""
+--         , "module " ++ modelName ++ " where"
+--         , ""
+--         , "import Data.Typeable"
+--         , "import Prelude hiding (id)"
+--         , "import Data.Text (Text)"
+--         , "import GHC.Generics (Generic)"
+--         , "import Data.Aeson (ToJSON, FromJSON)"
+--         , "import Database.SQLite.Simple.FromRow (FromRow(..), field)"
+--         , ""
+--         , modelCode
+--         , ""
+--         , "instance ToJSON " ++ modelName
+--         , "instance FromJSON " ++ modelName
+--         ]
+--       targetDir = "generated/models"
+--       filePath = targetDir </> modelName ++ ".hs"
+--   createDirectoryIfMissing True targetDir
+--   writeFile filePath fileContent
+
 writeModelToFile :: String -> [(String, Name)] -> IO ()
 writeModelToFile modelName fields = do
   decs <- runQ $ generateModel modelName fields
   let modelCode = simplePpr (head decs)
+      numFields = length fields
+      applicativeChain = unwords (replicate (numFields - 1) "field <*>") ++ " field"
+      fromRowInstance =
+        "instance FromRow " ++ modelName ++ " where\n" ++
+        "  fromRow = " ++ modelName ++ " <$> " ++ applicativeChain
+
       fileContent = unlines
         [ "{-# LANGUAGE DeriveGeneric #-}"
         , ""
@@ -79,12 +112,19 @@ writeModelToFile modelName fields = do
         , "import Data.Text (Text)"
         , "import GHC.Generics (Generic)"
         , "import Data.Aeson (ToJSON, FromJSON)"
+        , "import Database.SQLite.Simple.FromRow (FromRow(..), field)"
         , ""
+        , "-- | Address record type mapping to the database schema"
         , modelCode
         , ""
+        , "-- Automatically derive JSON serialization"
         , "instance ToJSON " ++ modelName
         , "instance FromJSON " ++ modelName
+        , ""
+        ,"-- Enable decoding from SQL rows"
+        , fromRowInstance
         ]
+
       targetDir = "generated/models"
       filePath = targetDir </> modelName ++ ".hs"
   createDirectoryIfMissing True targetDir
