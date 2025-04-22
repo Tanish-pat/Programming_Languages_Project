@@ -4,10 +4,13 @@ module Links.ProductLinks (registerRoutes) where
 
 import Web.Scotty
 import Control.Monad.IO.Class (liftIO)
-import qualified Data.Text.Lazy as TL
+import Data.Aeson (object, (.=))
 import Data.Text.Lazy (Text, pack)
+import qualified Data.Text.Lazy as TL
 import Database.SQLite.Simple
 import Database.SQLite.Simple.Types
+import Database.SQLite.Simple.FromRow (FromRow(..), field)
+import Data.Monoid ((<>))
 import ProductRoutes
 import Product
 
@@ -17,6 +20,13 @@ sqlDataToText (SQLFloat   f) = pack (show f)
 sqlDataToText (SQLText    t) = TL.fromStrict t
 sqlDataToText (SQLBlob    b) = pack (show b)
 sqlDataToText SQLNull        = "NULL"
+
+-- Check if product exists by SKU
+productExistsBySku :: Connection -> Text -> IO Bool
+productExistsBySku conn sku = do
+    res <- query conn "SELECT 1 FROM Product WHERE sku = ? LIMIT 1" (Only sku) :: IO [Only Int]
+    return (not (null res))
+
 
 registerRoutes :: Connection -> ScottyM ()
 registerRoutes conn = do
@@ -40,12 +50,16 @@ registerRoutes conn = do
         description <- param "description" :: ActionM Text
         price       <- param "price"       :: ActionM Double
         tags        <- param "tags"        :: ActionM Text
-        liftIO $ execute conn
-            "INSERT INTO Product (sku, name, description, price, tags) VALUES (?, ?, ?, ?, ?)"
-            (sku, name, description, price, tags)
-        newRow <- liftIO (query conn
-            "SELECT * FROM Product WHERE sku = ?" (Only sku) :: IO [[SQLData]])
-        json (map (map sqlDataToText) newRow)
+        exists <- liftIO $ productExistsBySku conn sku
+        if exists
+            then json $ object ["status" .= ("error" :: Text), "message" .= ("Product with this SKU already exists" :: Text)]
+            else do
+                liftIO $ execute conn
+                    "INSERT INTO Product (sku, name, description, price, tags) VALUES (?, ?, ?, ?, ?)"
+                    (sku, name, description, price, tags)
+                newRow <- liftIO (query conn
+                    "SELECT * FROM Product WHERE sku = ?" (Only sku) :: IO [[SQLData]])
+                json (map (map sqlDataToText) newRow)
 
     -- WORKING PUT http://localhost:3000/product/update/SKU006?sku=SKU006&name=Paani&description=mehnga paani&price=10000&tags=beverage
     put "/product/update/:sku" $ do
@@ -64,9 +78,13 @@ registerRoutes conn = do
     -- WORKING DELETE http://localhost:3000/product/delete/SKU006
     delete "/product/delete/:sku" $ do
         sku <- param "sku" :: ActionM Text
-        liftIO $ execute conn
-            "DELETE FROM Product WHERE sku = ?" (Only sku)
-        json (pack $ "Deleted product sku=" ++ TL.unpack sku)
+        exists <- liftIO $ productExistsBySku conn sku
+        if not exists
+            then json $ object ["status" .= ("error" :: Text), "message" .= ("Product not found" :: Text)]
+            else do
+                liftIO $ execute conn
+                    "DELETE FROM Product WHERE sku = ?" (Only sku)
+                json $ object ["status" .= ("success" :: Text), "message" .= ("Product deleted" :: Text)]
 
     -- WORKING GET http://localhost:3000/product/price/10/1000
     get "/product/price/:min/:max" $ do
@@ -83,3 +101,5 @@ registerRoutes conn = do
         rows <- liftIO (query conn
             "SELECT * FROM Product WHERE tags LIKE ?" (Only $ "%" <> tag <> "%") :: IO [[SQLData]])
         json (map (map sqlDataToText) rows)
+
+        

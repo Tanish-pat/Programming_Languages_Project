@@ -4,10 +4,12 @@ module Links.CouponLinks (registerRoutes) where
 
 import Web.Scotty
 import Control.Monad.IO.Class (liftIO)
+import Data.Aeson (object, (.=))
 import Data.Text.Lazy (Text, pack)
 import qualified Data.Text.Lazy as TL
 import Database.SQLite.Simple
 import Database.SQLite.Simple.Types
+import Database.SQLite.Simple.FromRow (FromRow(..), field)
 import CouponRoutes
 import Coupon
 
@@ -17,6 +19,18 @@ sqlDataToText (SQLFloat f)   = pack (show f)
 sqlDataToText (SQLText t)    = TL.fromStrict t
 sqlDataToText (SQLBlob b)    = pack (show b)
 sqlDataToText SQLNull        = "NULL"
+
+-- Check if coupon exists by couponCode
+couponExists :: Connection -> Text -> IO Bool
+couponExists conn code = do
+    res <- query conn "SELECT 1 FROM Coupon WHERE couponCode = ? LIMIT 1" (Only code) :: IO [Only Int]
+    return (not (null res))
+
+-- Check for duplicate couponCode
+isDuplicateCoupon :: Connection -> Text -> IO Bool
+isDuplicateCoupon conn code = do
+    res <- query conn "SELECT 1 FROM Coupon WHERE couponCode = ? LIMIT 1" (Only code) :: IO [Only Int]
+    return (not $ null res)
 
 registerRoutes :: Connection -> ScottyM ()
 registerRoutes conn = do
@@ -37,19 +51,35 @@ registerRoutes conn = do
         code <- param "couponCode" :: ActionM Text
         disc <- param "discount"   :: ActionM Double
         actv <- param "isActive"   :: ActionM Bool
-        liftIO $ execute conn "INSERT INTO Coupon (couponCode, discount, isActive) VALUES (?, ?, ?)" (code, disc, actv)
-        json (pack "Coupon created")
+        isDup <- liftIO $ isDuplicateCoupon conn code
+        if isDup
+            then json $ object ["status" .= ("error" :: Text), "message" .= ("Coupon code already exists" :: Text)]
+            else do
+                liftIO $ execute conn "INSERT INTO Coupon (couponCode, discount, isActive) VALUES (?, ?, ?)" (code, disc, actv)
+                json (object ["status" .= ("success" :: Text), "message" .= ("Coupon created" :: Text)])
 
-    -- WORKING PUT http://localhost:3000/coupon/update/6/?couponCode=NEWcustomer1000&discount=30.0&isActive=true
+    -- WORKING PUT http://localhost:3000/coupon/update/NEWcustomer1000?couponCode=NEWcustomer1000&discount=30.0&isActive=true
     put "/coupon/update/:couponCode" $ do
         code <- param "couponCode" :: ActionM Text
         disc <- param "discount"   :: ActionM Double
         actv <- param "isActive"   :: ActionM Bool
-        liftIO $ execute conn "UPDATE Coupon SET discount = ?, isActive = ? WHERE couponCode = ?" (disc, actv, code)
-        json (pack "Coupon updated")
 
-    -- WORKING DELETE http://localhost:3000/coupon/delete/6
+        -- Check if the coupon exists
+        exists <- liftIO $ couponExists conn code
+        if not exists
+            then json $ object ["status" .= ("error" :: Text), "message" .= ("Coupon not found" :: Text)]
+            else do
+                liftIO $ execute conn "UPDATE Coupon SET discount = ?, isActive = ? WHERE couponCode = ?" (disc, actv, code)
+                json (object ["status" .= ("success" :: Text), "message" .= ("Coupon updated" :: Text)])
+
+    -- WORKING DELETE http://localhost:3000/coupon/delete/NEWcustomer1000
     delete "/coupon/delete/:couponCode" $ do
         code <- param "couponCode" :: ActionM Text
-        liftIO $ execute conn "DELETE FROM Coupon WHERE couponCode = ?" (Only code)
-        json (pack "Coupon deleted")
+
+        -- Check if the coupon exists before attempting to delete
+        exists <- liftIO $ couponExists conn code
+        if not exists
+            then json $ object ["status" .= ("error" :: Text), "message" .= ("Coupon not found" :: Text)]
+            else do
+                liftIO $ execute conn "DELETE FROM Coupon WHERE couponCode = ?" (Only code)
+                json (object ["status" .= ("success" :: Text), "message" .= ("Coupon deleted" :: Text)])

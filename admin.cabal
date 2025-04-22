@@ -22,6 +22,7 @@ library modelbuilder
       ModelGen
     , ModelRegistry
     , SchemaSeedBuilder
+    
   
   build-depends:
       base               >=4.15 && <4.19
@@ -40,6 +41,23 @@ library modelbuilder
     , warp
   default-language:   Haskell2010
   ghc-options:        -Wall -v0 -w -dno-debug-output
+
+
+-- -- =====================================================
+-- -- Library: db-setup
+-- -- =====================================================
+
+
+-- executable db-setup
+--   main-is:             DBSetupMain.hs
+--   hs-source-dirs:      app
+--   build-depends:
+--       base >=4.7 && <5
+--     , sqlite-simple
+--     , directory
+--     , text
+--   default-language:    Haskell2010
+
 
 
 
@@ -128,9 +146,15 @@ executable admin
 --   ghc-options:        -Wall -v0 -w -dno-debug-output
 --   default-language:   Haskell2010
 
+
+
+
 -- =====================================================
 -- Executable: server (Scotty API Server on Port 3000)
 -- =====================================================
+
+
+
 executable server
   main-is:           Server.hs
   hs-source-dirs:
@@ -151,13 +175,14 @@ executable server
     , http-types
     , scotty
     , text
-    , bytestring
     , time
     , transformers
     , vector             >=0.12
     , wai
     , wai-extra
     , warp
+    , modelbuilder
+    , routebuilder
   ghc-options:        -Wall -v0 -w -dno-debug-output
   default-language:   Haskell2010
   other-modules:
@@ -179,11 +204,15 @@ executable server
 executable query-admin
   hs-source-dirs:      app
   main-is:             QueryMain.hs
-  other-modules:       QueryPrompter
+  -- other-modules:       
   build-depends:
     base >=4.7 && <5,
     containers,
     text,
+    regex-tdfa,
     sqlite-simple,
     ansi-terminal
   default-language:    Haskell2010
+  other-modules:
+    QueryPrompter,
+    SchemaParser
