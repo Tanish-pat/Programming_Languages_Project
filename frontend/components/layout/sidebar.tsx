@@ -12,12 +12,12 @@ const navItems = [
   { name: "Customers", href: "/customers", icon: Users },
   { name: "Products", href: "/products", icon: Package },
   { name: "Reviews", href: "/reviews", icon: Star },
-  { name: "Addresses", href: "/addresses", icon: MapPin },
   { name: "Inventory", href: "/inventory", icon: BarChart2 },
-  { name: "Payments", href: "/payments", icon: CreditCard },
-  { name: "Coupons", href: "/coupons", icon: Tag },
   { name: "Categories", href: "/categories", icon: Layers },
   { name: "Product Categories", href: "/product-categories", icon: Grid },
+  { name: "Coupons", href: "/coupons", icon: Tag },
+  { name: "Payments", href: "/payments", icon: CreditCard },
+  { name: "Addresses", href: "/addresses", icon: MapPin },
 ]
 
 export default function Sidebar() {
@@ -34,7 +34,7 @@ export default function Sidebar() {
 
       <div
         className={cn(
-          "fixed inset-y-0 left-0 z-40 w-64 bg-background border-r transform transition-transform duration-200 ease-in-out md:translate-x-0",
+          "fixed inset-y-0 left-0 z-40 w-64 bg-white border-r transform transition-transform duration-200 ease-in-out md:translate-x-0 md:static",
           isOpen ? "translate-x-0" : "-translate-x-full",
         )}
       >
@@ -55,7 +55,7 @@ export default function Sidebar() {
                       onClick={() => setIsOpen(false)}
                       className={cn(
                         "flex items-center gap-3 rounded-md px-3 py-2 text-sm font-medium transition-colors",
-                        isActive ? "bg-primary text-primary-foreground" : "hover:bg-muted",
+                        isActive ? "bg-gray-100 text-gray-900" : "text-gray-600 hover:bg-gray-100 hover:text-gray-900",
                       )}
                     >
                       <Icon className="h-4 w-4" />
@@ -67,7 +67,7 @@ export default function Sidebar() {
             </ul>
           </nav>
           <div className="p-4 border-t">
-            <div className="text-xs text-muted-foreground">Inventory Management v1.0</div>
+            <div className="text-xs text-gray-500">Inventory Management v1.0</div>
           </div>
         </div>
       </div>
