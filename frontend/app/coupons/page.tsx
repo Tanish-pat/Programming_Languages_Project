@@ -3,13 +3,12 @@
 import type React from "react"
 
 import { useState, useEffect } from "react"
-import { useRouter } from "next/navigation"
-import { Plus, MoreHorizontal } from "lucide-react"
+import { Plus, Edit, Trash, MoreHorizontal } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { DataTable } from "@/components/ui/data-table"
 import { Badge } from "@/components/ui/badge"
-import { CustomerAPI } from "@/lib/api"
+import { CouponAPI } from "@/lib/api"
 import { useToast } from "@/components/ui/use-toast"
 import {
   Dialog,
@@ -25,36 +24,33 @@ import { Switch } from "@/components/ui/switch"
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu"
 import type { ColumnDef } from "@tanstack/react-table"
 
-interface Customer {
-  id: number
-  name: string
-  email: string
-  age: number
+interface Coupon {
+  couponCode: string
+  discount: number
   isActive: boolean
 }
 
-export default function CustomersPage() {
-  const router = useRouter()
+export default function CouponsPage() {
   const { toast } = useToast()
-  const [customers, setCustomers] = useState<Customer[]>([])
+  const [coupons, setCoupons] = useState<Coupon[]>([])
   const [isLoading, setIsLoading] = useState(true)
   const [isDialogOpen, setIsDialogOpen] = useState(false)
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false)
-  const [currentCustomer, setCurrentCustomer] = useState<Customer | null>(null)
+  const [currentCoupon, setCurrentCoupon] = useState<Coupon | null>(null)
 
   useEffect(() => {
-    fetchCustomers()
+    fetchCoupons()
   }, [])
 
-  const fetchCustomers = async () => {
+  const fetchCoupons = async () => {
     setIsLoading(true)
     try {
-      const data = await CustomerAPI.getAll()
-      setCustomers(data)
+      const data = await CouponAPI.getAll()
+      setCoupons(data)
     } catch (error) {
       toast({
         title: "Error",
-        description: "Failed to fetch customers",
+        description: "Failed to fetch coupons",
         variant: "destructive",
       })
     } finally {
@@ -63,40 +59,38 @@ export default function CustomersPage() {
   }
 
   const handleAddNew = () => {
-    setCurrentCustomer({
-      id: 0,
-      name: "",
-      email: "",
-      age: 0,
+    setCurrentCoupon({
+      couponCode: "",
+      discount: 0,
       isActive: true,
     })
     setIsDialogOpen(true)
   }
 
-  const handleEdit = (customer: Customer) => {
-    setCurrentCustomer(customer)
+  const handleEdit = (coupon: Coupon) => {
+    setCurrentCoupon(coupon)
     setIsDialogOpen(true)
   }
 
-  const handleDelete = (customer: Customer) => {
-    setCurrentCustomer(customer)
+  const handleDelete = (coupon: Coupon) => {
+    setCurrentCoupon(coupon)
     setIsDeleteDialogOpen(true)
   }
 
   const confirmDelete = async () => {
-    if (!currentCustomer) return
+    if (!currentCoupon) return
 
     try {
-      await CustomerAPI.delete(currentCustomer.id)
+      await CouponAPI.delete(currentCoupon.couponCode)
       toast({
         title: "Success",
-        description: "Customer deleted successfully",
+        description: "Coupon deleted successfully",
       })
-      fetchCustomers()
+      fetchCoupons()
     } catch (error) {
       toast({
         title: "Error",
-        description: "Failed to delete customer",
+        description: "Failed to delete coupon",
         variant: "destructive",
       })
     } finally {
@@ -107,68 +101,64 @@ export default function CustomersPage() {
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value, type } = e.target
 
-    if (!currentCustomer) return
+    if (!currentCoupon) return
 
-    setCurrentCustomer({
-      ...currentCustomer,
+    setCurrentCoupon({
+      ...currentCoupon,
       [name]: type === "number" ? Number(value) : value,
     })
   }
 
   const handleSwitchChange = (checked: boolean) => {
-    if (!currentCustomer) return
+    if (!currentCoupon) return
 
-    setCurrentCustomer({
-      ...currentCustomer,
+    setCurrentCoupon({
+      ...currentCoupon,
       isActive: checked,
     })
   }
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
-    if (!currentCustomer) return
+    if (!currentCoupon) return
 
     try {
-      if (currentCustomer.id === 0) {
-        await CustomerAPI.create(currentCustomer)
+      // Check if coupon exists by code
+      const isNewCoupon = !coupons.some((c) => c.couponCode === currentCoupon.couponCode)
+
+      if (isNewCoupon) {
+        await CouponAPI.create(currentCoupon)
         toast({
           title: "Success",
-          description: "Customer created successfully",
+          description: "Coupon created successfully",
         })
       } else {
-        await CustomerAPI.update(currentCustomer.id, currentCustomer)
+        await CouponAPI.update(currentCoupon.couponCode, currentCoupon)
         toast({
           title: "Success",
-          description: "Customer updated successfully",
+          description: "Coupon updated successfully",
         })
       }
       setIsDialogOpen(false)
-      fetchCustomers()
+      fetchCoupons()
     } catch (error) {
       toast({
         title: "Error",
-        description: `Failed to ${currentCustomer.id === 0 ? "create" : "update"} customer`,
+        description: `Failed to ${!coupons.some((c) => c.couponCode === currentCoupon.couponCode) ? "create" : "update"} coupon`,
         variant: "destructive",
       })
     }
   }
 
-  const columns: ColumnDef<Customer>[] = [
+  const columns: ColumnDef<Coupon>[] = [
     {
-      accessorKey: "id",
-      header: "ID",
+      accessorKey: "couponCode",
+      header: "Coupon Code",
     },
     {
-      accessorKey: "name",
-      header: "Name",
-    },
-    {
-      accessorKey: "email",
-      header: "Email",
-    },
-    {
-      accessorKey: "age",
-      header: "Age",
+      accessorKey: "discount",
+      header: "Discount",
+      cell: ({ row }) => `${row.original.discount}%`,
     },
     {
       accessorKey: "isActive",
@@ -190,11 +180,12 @@ export default function CustomersPage() {
             </Button>
           </DropdownMenuTrigger>
           <DropdownMenuContent align="end">
-            <DropdownMenuItem onClick={() => router.push(`/customers/${row.original.id}`)}>
-              View Details
+            <DropdownMenuItem onClick={() => handleEdit(row.original)}>
+              <Edit className="mr-2 h-4 w-4" /> Edit
             </DropdownMenuItem>
-            <DropdownMenuItem onClick={() => handleEdit(row.original)}>Edit</DropdownMenuItem>
-            <DropdownMenuItem onClick={() => handleDelete(row.original)}>Delete</DropdownMenuItem>
+            <DropdownMenuItem onClick={() => handleDelete(row.original)}>
+              <Trash className="mr-2 h-4 w-4" /> Delete
+            </DropdownMenuItem>
           </DropdownMenuContent>
         </DropdownMenu>
       ),
@@ -204,22 +195,27 @@ export default function CustomersPage() {
   return (
     <div className="space-y-4">
       <div className="flex justify-between items-center">
-        <h1 className="text-2xl font-bold tracking-tight">Customers</h1>
+        <h1 className="text-2xl font-bold tracking-tight">Coupons</h1>
         <Button onClick={handleAddNew}>
-          <Plus className="mr-2 h-4 w-4" /> Add Customer
+          <Plus className="mr-2 h-4 w-4" /> Add Coupon
         </Button>
       </div>
 
       <Card>
         <CardHeader>
-          <CardTitle>Customer Management</CardTitle>
-          <CardDescription>View and manage your customer accounts</CardDescription>
+          <CardTitle>Coupon Management</CardTitle>
+          <CardDescription>View and manage discount coupons</CardDescription>
         </CardHeader>
         <CardContent>
           {isLoading ? (
-            <div className="flex justify-center items-center h-24">Loading customers...</div>
+            <div className="flex justify-center items-center h-24">Loading coupons...</div>
           ) : (
-            <DataTable columns={columns} data={customers} searchColumn="name" searchPlaceholder="Search customers..." />
+            <DataTable
+              columns={columns}
+              data={coupons}
+              searchColumn="couponCode"
+              searchPlaceholder="Search by coupon code..."
+            />
           )}
         </CardContent>
       </Card>
@@ -228,42 +224,43 @@ export default function CustomersPage() {
         <DialogContent>
           <form onSubmit={handleSubmit}>
             <DialogHeader>
-              <DialogTitle>{currentCustomer?.id === 0 ? "Add New Customer" : "Edit Customer"}</DialogTitle>
+              <DialogTitle>
+                {!coupons.some((c) => c.couponCode === currentCoupon?.couponCode) ? "Add New Coupon" : "Edit Coupon"}
+              </DialogTitle>
               <DialogDescription>
-                {currentCustomer?.id === 0 ? "Add a new customer to your system" : "Edit the customer information"}
+                {!coupons.some((c) => c.couponCode === currentCoupon?.couponCode)
+                  ? "Add a new discount coupon"
+                  : "Edit the coupon information"}
               </DialogDescription>
             </DialogHeader>
             <div className="grid gap-4 py-4">
               <div className="space-y-2">
-                <Label htmlFor="name">Name</Label>
-                <Input id="name" name="name" value={currentCustomer?.name} onChange={handleInputChange} required />
-              </div>
-              <div className="space-y-2">
-                <Label htmlFor="email">Email</Label>
+                <Label htmlFor="couponCode">Coupon Code</Label>
                 <Input
-                  id="email"
-                  name="email"
-                  type="email"
-                  value={currentCustomer?.email}
+                  id="couponCode"
+                  name="couponCode"
+                  value={currentCoupon?.couponCode}
                   onChange={handleInputChange}
                   required
+                  disabled={coupons.some((c) => c.couponCode === currentCoupon?.couponCode)}
                 />
               </div>
               <div className="space-y-2">
-                <Label htmlFor="age">Age</Label>
+                <Label htmlFor="discount">Discount (%)</Label>
                 <Input
-                  id="age"
-                  name="age"
+                  id="discount"
+                  name="discount"
                   type="number"
                   min="0"
-                  value={currentCustomer?.age}
+                  max="100"
+                  value={currentCoupon?.discount}
                   onChange={handleInputChange}
                   required
                 />
               </div>
               <div className="flex items-center space-x-2">
-                <Switch id="isActive" checked={currentCustomer?.isActive} onCheckedChange={handleSwitchChange} />
-                <Label htmlFor="isActive">Active Account</Label>
+                <Switch id="isActive" checked={currentCoupon?.isActive} onCheckedChange={handleSwitchChange} />
+                <Label htmlFor="isActive">Active Coupon</Label>
               </div>
             </div>
             <DialogFooter>
@@ -278,7 +275,7 @@ export default function CustomersPage() {
           <DialogHeader>
             <DialogTitle>Confirm Deletion</DialogTitle>
             <DialogDescription>
-              Are you sure you want to delete customer "{currentCustomer?.name}"? This action cannot be undone.
+              Are you sure you want to delete coupon "{currentCoupon?.couponCode}"? This action cannot be undone.
             </DialogDescription>
           </DialogHeader>
           <DialogFooter>
