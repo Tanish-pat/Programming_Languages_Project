@@ -179,6 +179,7 @@ executable server
     , transformers
     , vector             >=0.12
     , wai
+    , wai-cors
     , wai-extra
     , warp
     , modelbuilder

@@ -48,33 +48,38 @@ export default function ProductCategoriesPage() {
   const fetchProductCategories = async () => {
     setIsLoading(true)
     try {
-      const data = await ProductCategoryAPI.getAll()
-
-      // Fetch product and category names
-      const mappingsWithNames = await Promise.all(
-        data.map(async (mapping) => {
+      const rawData = await ProductCategoryAPI.getAll()
+  
+      const mappedProductCategories: ProductCategory[] = await Promise.all(
+        rawData.map(async (item: any[]) => {
+          const mapping: ProductCategory = {
+            productId: item[0],
+            categoryId: Number(item[1]),
+          }
+  
           try {
             const [product, category] = await Promise.all([
               ProductAPI.getBySku(mapping.productId),
               CategoryAPI.getById(mapping.categoryId),
             ])
-
+            console.log("Product:", product)
+            console.log("Category:", category)
             return {
               ...mapping,
-              productName: product.name,
-              categoryName: category.name,
+              productName: product[0][1],
+              categoryName: category[0][1],
             }
-          } catch (error) {
+          } catch {
             return {
               ...mapping,
               productName: "Unknown Product",
               categoryName: "Unknown Category",
             }
           }
-        }),
+        })
       )
-
-      setProductCategories(mappingsWithNames)
+  
+      setProductCategories(mappedProductCategories)
     } catch (error) {
       toast({
         title: "Error",
@@ -85,11 +90,18 @@ export default function ProductCategoriesPage() {
       setIsLoading(false)
     }
   }
-
+  
   const fetchProducts = async () => {
     try {
-      const data = await ProductAPI.getAll()
-      setProducts(data)
+      const rawData = await ProductAPI.getAll()
+      const mappedProducts = rawData.map((item: any[]) => ({
+        sku: item[0],
+        name: item[1],
+        description: item[2],
+        price: Number(item[3]),
+        tags: item[4],
+      }))
+      setProducts(mappedProducts)
     } catch (error) {
       toast({
         title: "Error",
@@ -98,11 +110,16 @@ export default function ProductCategoriesPage() {
       })
     }
   }
-
+  
   const fetchCategories = async () => {
     try {
-      const data = await CategoryAPI.getAll()
-      setCategories(data)
+      const rawData = await CategoryAPI.getAll()
+      const mappedCategories = rawData.map((item: any[]) => ({
+        categoryId: Number(item[0]),
+        name: item[1],
+        description: item[2],
+      }))
+      setCategories(mappedCategories)
     } catch (error) {
       toast({
         title: "Error",

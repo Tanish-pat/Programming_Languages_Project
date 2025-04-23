@@ -26,7 +26,6 @@ interface Inventory {
   productId: string
   quantity: number
   location: string
-  productName?: string
 }
 
 export default function InventoryPage() {
@@ -43,26 +42,33 @@ export default function InventoryPage() {
   const fetchInventory = async () => {
     setIsLoading(true)
     try {
-      const data = await InventoryAPI.getAll()
-
-      // Fetch product names for each inventory item
+      const rawData = await InventoryAPI.getAll()
+  
+      // Convert raw array to Inventory[]
+      const mappedInventory: Inventory[] = rawData.map((item: any[]) => ({
+        productId: item[0],
+        quantity: Number(item[1]),
+        location: item[2],
+      }))
+  
+      // Attach productName dynamically using ProductAPI.getBySku
       const inventoryWithNames = await Promise.all(
-        data.map(async (item) => {
+        mappedInventory.map(async (item) => {
           try {
             const product = await ProductAPI.getBySku(item.productId)
             return {
               ...item,
               productName: product.name,
             }
-          } catch (error) {
+          } catch (err) {
             return {
               ...item,
               productName: "Unknown Product",
             }
           }
-        }),
+        })
       )
-
+  
       setInventory(inventoryWithNames)
     } catch (error) {
       toast({
@@ -74,7 +80,6 @@ export default function InventoryPage() {
       setIsLoading(false)
     }
   }
-
   const handleEdit = (item: Inventory) => {
     setCurrentItem(item)
     setIsDialogOpen(true)
@@ -129,10 +134,10 @@ export default function InventoryPage() {
       accessorKey: "productId",
       header: "Product ID",
     },
-    {
-      accessorKey: "productName",
-      header: "Product Name",
-    },
+    // {
+    //   accessorKey: "productName",
+    //   header: "Product Name",
+    // },
     {
       accessorKey: "quantity",
       header: "Quantity",
@@ -184,7 +189,7 @@ export default function InventoryPage() {
             <DataTable
               columns={columns}
               data={inventory}
-              searchColumn="productName"
+              // searchColumn="productName"
               searchPlaceholder="Search by product name..."
             />
           )}
@@ -199,10 +204,10 @@ export default function InventoryPage() {
               <DialogDescription>Update inventory quantity and location for this product</DialogDescription>
             </DialogHeader>
             <div className="grid gap-4 py-4">
-              <div className="space-y-2">
+              {/* <div className="space-y-2">
                 <Label>Product</Label>
                 <Input value={currentItem?.productName} disabled />
-              </div>
+              </div> */}
               <div className="space-y-2">
                 <Label htmlFor="quantity">Quantity</Label>
                 <Input

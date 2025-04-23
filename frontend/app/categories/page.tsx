@@ -44,8 +44,15 @@ export default function CategoriesPage() {
   const fetchCategories = async () => {
     setIsLoading(true)
     try {
-      const data = await CategoryAPI.getAll()
-      setCategories(data)
+      const rawData = await CategoryAPI.getAll()
+  
+      const mappedCategories: Category[] = rawData.map((item: any[]) => ({
+        categoryId: Number(item[0]),
+        name: item[1],
+        description: item[2],
+      }))
+  
+      setCategories(mappedCategories)
     } catch (error) {
       toast({
         title: "Error",

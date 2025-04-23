@@ -1,7 +1,7 @@
 // API utility functions to interact with the backend
 
 // Base URL for API requests
-const API_BASE_URL = "http://localhost:3000/api"
+const API_BASE_URL = "http://localhost:3000"
 
 // Generic fetch function with error handling
 async function fetchAPI<T>(endpoint: string, options: RequestInit = {}): Promise<T> {
@@ -28,20 +28,31 @@ async function fetchAPI<T>(endpoint: string, options: RequestInit = {}): Promise
   }
 }
 
+function toQueryParams(data: Record<string, any>): string {
+  const params = new URLSearchParams()
+  Object.entries(data).forEach(([key, value]) => {
+    if (value !== undefined && value !== null) {
+      params.append(key, value.toString())
+    }
+  })
+  return params.toString()
+}
+
+
 // Customer API functions
 export const CustomerAPI = {
   getAll: () => fetchAPI<any[]>("/customer/getAll"),
   getById: (id: number) => fetchAPI<any>(`/customer/getById/${id}`),
   create: (data: any) =>
-    fetchAPI<any>("/customer/create", {
+    fetchAPI<any>(`/customer/create?${toQueryParams(data)}`, {
       method: "POST",
-      body: JSON.stringify(data),
     }),
+  
   update: (id: number, data: any) =>
-    fetchAPI<any>(`/customer/update/${id}`, {
+    fetchAPI<any>(`/customer/update/${id}?${toQueryParams(data)}`, {
       method: "PUT",
-      body: JSON.stringify(data),
     }),
+  
   delete: (id: number) =>
     fetchAPI<void>(`/customer/delete/${id}`, {
       method: "DELETE",
@@ -60,15 +71,15 @@ export const ProductAPI = {
   getAll: () => fetchAPI<any[]>("/product/getAll"),
   getBySku: (sku: string) => fetchAPI<any>(`/product/getBySku/${sku}`),
   create: (data: any) =>
-    fetchAPI<any>("/product/create", {
+    fetchAPI<any>(`/product/create?${toQueryParams(data)}`, {
       method: "POST",
-      body: JSON.stringify(data),
     }),
+  
   update: (sku: string, data: any) =>
-    fetchAPI<any>(`/product/update/${sku}`, {
+    fetchAPI<any>(`/product/update/${sku}?${toQueryParams(data)}`, {
       method: "PUT",
-      body: JSON.stringify(data),
     }),
+  
   delete: (sku: string) =>
     fetchAPI<void>(`/product/delete/${sku}`, {
       method: "DELETE",
@@ -87,15 +98,15 @@ export const ReviewAPI = {
   getAll: () => fetchAPI<any[]>("/review/getAll"),
   getById: (reviewId: number) => fetchAPI<any>(`/review/getById/${reviewId}`),
   create: (data: any) =>
-    fetchAPI<any>("/review/create", {
+    fetchAPI<any>(`/review/create?${toQueryParams(data)}`, {
       method: "POST",
-      body: JSON.stringify(data),
     }),
+  
   update: (reviewId: number, data: any) =>
-    fetchAPI<any>(`/review/update/${reviewId}`, {
+    fetchAPI<any>(`/review/update/${reviewId}?${toQueryParams(data)}`, {
       method: "PUT",
-      body: JSON.stringify(data),
     }),
+  
   delete: (reviewId: number) =>
     fetchAPI<void>(`/review/delete/${reviewId}`, {
       method: "DELETE",
@@ -113,15 +124,15 @@ export const AddressAPI = {
   getAll: () => fetchAPI<any[]>("/address/getAll"),
   getById: (addressId: number) => fetchAPI<any>(`/address/getById/${addressId}`),
   create: (data: any) =>
-    fetchAPI<any>("/address/create", {
+    fetchAPI<any>(`/address/create?${toQueryParams(data)}`, {
       method: "POST",
-      body: JSON.stringify(data),
     }),
+  
   update: (addressId: number, data: any) =>
-    fetchAPI<any>(`/address/update/${addressId}`, {
+    fetchAPI<any>(`/address/update/${addressId}?${toQueryParams(data)}`, {
       method: "PUT",
-      body: JSON.stringify(data),
     }),
+  
   delete: (addressId: number) =>
     fetchAPI<void>(`/address/delete/${addressId}`, {
       method: "DELETE",
@@ -133,10 +144,9 @@ export const AddressAPI = {
 export const InventoryAPI = {
   getAll: () => fetchAPI<any[]>("/inventory/getAll"),
   getByProduct: (productId: string) => fetchAPI<any>(`/inventory/getByProduct/${productId}`),
-  update: (productId: string, data: any) =>
-    fetchAPI<any>(`/inventory/update/${productId}`, {
+  uupdate: (productId: string, data: any) =>
+    fetchAPI<any>(`/inventory/update/${productId}?${toQueryParams(data)}`, {
       method: "PUT",
-      body: JSON.stringify(data),
     }),
   checkAvailability: (location?: string) => {
     const searchParams = new URLSearchParams()
@@ -151,15 +161,15 @@ export const PaymentAPI = {
   getAll: () => fetchAPI<any[]>("/payment/getAll"),
   getById: (paymentId: number) => fetchAPI<any>(`/payment/getById/${paymentId}`),
   create: (data: any) =>
-    fetchAPI<any>("/payment/create", {
+    fetchAPI<any>(`/payment/create?${toQueryParams(data)}`, {
       method: "POST",
-      body: JSON.stringify(data),
     }),
+  
   update: (paymentId: number, data: any) =>
-    fetchAPI<any>(`/payment/update/${paymentId}`, {
+    fetchAPI<any>(`/payment/update/${paymentId}?${toQueryParams(data)}`, {
       method: "PUT",
-      body: JSON.stringify(data),
     }),
+  
   delete: (paymentId: number) =>
     fetchAPI<void>(`/payment/delete/${paymentId}`, {
       method: "DELETE",
@@ -171,15 +181,15 @@ export const CouponAPI = {
   getAll: () => fetchAPI<any[]>("/coupon/getAll"),
   getByCode: (couponCode: string) => fetchAPI<any>(`/coupon/getByCode/${couponCode}`),
   create: (data: any) =>
-    fetchAPI<any>("/coupon/create", {
+    fetchAPI<any>(`/coupon/create?${toQueryParams(data)}`, {
       method: "POST",
-      body: JSON.stringify(data),
     }),
+  
   update: (couponCode: string, data: any) =>
-    fetchAPI<any>(`/coupon/update/${couponCode}`, {
+    fetchAPI<any>(`/coupon/update/${couponCode}?${toQueryParams(data)}`, {
       method: "PUT",
-      body: JSON.stringify(data),
     }),
+  
   delete: (couponCode: string) =>
     fetchAPI<void>(`/coupon/delete/${couponCode}`, {
       method: "DELETE",
@@ -190,17 +200,17 @@ export const CouponAPI = {
 // Category API functions
 export const CategoryAPI = {
   getAll: () => fetchAPI<any[]>("/category/getAll"),
-  getById: (categoryId: number) => fetchAPI<any>(`/category/getById/${categoryId}`),
+  getById: (categoryId: number) => fetchAPI<any>(`/category/get/${categoryId}`),
   create: (data: any) =>
-    fetchAPI<any>("/category/create", {
+    fetchAPI<any>(`/category/create?${toQueryParams(data)}`, {
       method: "POST",
-      body: JSON.stringify(data),
     }),
+  
   update: (categoryId: number, data: any) =>
-    fetchAPI<any>(`/category/update/${categoryId}`, {
+    fetchAPI<any>(`/category/update/${categoryId}?${toQueryParams(data)}`, {
       method: "PUT",
-      body: JSON.stringify(data),
     }),
+  
   delete: (categoryId: number) =>
     fetchAPI<void>(`/category/delete/${categoryId}`, {
       method: "DELETE",
@@ -209,18 +219,18 @@ export const CategoryAPI = {
 
 // ProductCategory API functions
 export const ProductCategoryAPI = {
-  getAll: () => fetchAPI<any[]>("/productCategory/getAll"),
+  getAll: () => fetchAPI<any[]>("/product-category/getAll"),
   getByProductAndCategory: (productId: string, categoryId: number) =>
-    fetchAPI<any>(`/productCategory/get/${productId}/${categoryId}`),
+    fetchAPI<any>(`/product-category/get/${productId}/${categoryId}`),
   create: (data: any) =>
-    fetchAPI<any>("/productCategory/create", {
+    fetchAPI<any>(`/product-category/assign?${toQueryParams(data)}`, {
       method: "POST",
-      body: JSON.stringify(data),
     }),
-  delete: (productId: string, categoryId: number) =>
-    fetchAPI<void>(`/productCategory/delete/${productId}/${categoryId}`, {
-      method: "DELETE",
-    }),
-  getByProduct: (productId: string) => fetchAPI<any[]>(`/productCategory/byProduct/${productId}`),
-  getByCategory: (categoryId: number) => fetchAPI<any[]>(`/productCategory/byCategory/${categoryId}`),
+  
+    delete: (productId: string, categoryId: number) =>
+      fetchAPI<void>(`/product-category/unassign/?productId=${productId}&categoryId=${categoryId}`, {
+        method: "DELETE",
+      }),
+  getByProduct: (productId: string) => fetchAPI<any[]>(`/product-category/byProduct/${productId}`),
+  getByCategory: (categoryId: number) => fetchAPI<any[]>(`/product-category/byCategory/${categoryId}`),
 }

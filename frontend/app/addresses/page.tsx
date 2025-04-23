@@ -34,6 +34,14 @@ interface Address {
   customerName?: string
 }
 
+interface Customer {
+  id: number
+  name: string
+  email: string
+  phone: string
+}
+
+
 export default function AddressesPage() {
   const { toast } = useToast()
   const [addresses, setAddresses] = useState<Address[]>([])
@@ -51,27 +59,37 @@ export default function AddressesPage() {
   const fetchAddresses = async () => {
     setIsLoading(true)
     try {
-      const data = await AddressAPI.getAll()
-
-      // Fetch customer names
-      const addressesWithNames = await Promise.all(
-        data.map(async (address) => {
+      const rawData = await AddressAPI.getAll()
+  
+      const mappedAddresses: Address[] = await Promise.all(
+        rawData.map(async (item: any[]) => {
+          const address: Address = {
+            addressId: item[0],
+            customerId: item[1],
+            line1: item[2],
+            line2: item[3],
+            city: item[4],
+            state: item[5],
+            zipCode: item[6],
+          }
+  
           try {
             const customer = await CustomerAPI.getById(address.customerId)
+            console.log("Customer:", customer)
             return {
               ...address,
-              customerName: customer.name,
+              customerName: customer[0][1],
             }
-          } catch (error) {
+          } catch {
             return {
               ...address,
               customerName: "Unknown Customer",
             }
           }
-        }),
+        })
       )
-
-      setAddresses(addressesWithNames)
+  
+      setAddresses(mappedAddresses)
     } catch (error) {
       toast({
         title: "Error",
@@ -85,8 +103,15 @@ export default function AddressesPage() {
 
   const fetchCustomers = async () => {
     try {
-      const data = await CustomerAPI.getAll()
-      setCustomers(data)
+      const rawData = await CustomerAPI.getAll()
+      const mappedCustomers = rawData.map((item: any[]) => ({
+        customerId: item[0],
+        name: item[1],
+        email: item[2],
+        phone: item[3],
+      }))
+      setCustomers(mappedCustomers)
+      console.log("Customers:", mappedCustomers)
     } catch (error) {
       toast({
         title: "Error",
@@ -282,8 +307,9 @@ export default function AddressesPage() {
                     <SelectValue placeholder="Select a customer" />
                   </SelectTrigger>
                   <SelectContent>
+
                     {customers.map((customer) => (
-                      <SelectItem key={customer.id} value={customer.id.toString()}>
+                      <SelectItem key={customer.customerId} value={customer.customerId.toString()}>
                         {customer.name}
                       </SelectItem>
                     ))}

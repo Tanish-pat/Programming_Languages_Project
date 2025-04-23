@@ -47,20 +47,30 @@ export default function ProductsPage() {
   }, [])
 
   const fetchProducts = async () => {
-    setIsLoading(true)
+    setIsLoading(true);
     try {
-      const data = await ProductAPI.getAll()
-      setProducts(data)
+      const rawData = await ProductAPI.getAll();
+      
+      // Map 2D array to objects
+      const mappedData = rawData.map(([sku, name, description, price, tags]: any[]) => ({
+        sku,
+        name,
+        description,
+        price: parseFloat(price),
+        tags,
+      }));
+  
+      setProducts(mappedData);
     } catch (error) {
       toast({
         title: "Error",
         description: "Failed to fetch products",
         variant: "destructive",
-      })
+      });
     } finally {
-      setIsLoading(false)
+      setIsLoading(false);
     }
-  }
+  };
 
   const handleAddNew = () => {
     setCurrentProduct({
@@ -116,37 +126,37 @@ export default function ProductsPage() {
   }
 
   const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault()
-    if (!currentProduct) return
-
+    e.preventDefault();
+    if (!currentProduct) return;
+  
     try {
-      // Check if product exists by SKU
-      const isNewProduct = !products.some((p) => p.sku === currentProduct.sku)
-
-      if (isNewProduct) {
-        await ProductAPI.create(currentProduct)
+      const existing = products.some((p) => p.sku === currentProduct.sku);
+  
+      if (!existing) {
+        await ProductAPI.create(currentProduct);
         toast({
           title: "Success",
           description: "Product created successfully",
-        })
+        });
       } else {
-        await ProductAPI.update(currentProduct.sku, currentProduct)
+        await ProductAPI.update(currentProduct.sku, currentProduct);
         toast({
           title: "Success",
           description: "Product updated successfully",
-        })
+        });
       }
-      setIsDialogOpen(false)
-      fetchProducts()
+  
+      setIsDialogOpen(false);
+      await fetchProducts(); // ensure products list refreshes after the action
     } catch (error) {
+      console.error(error); // helpful during debugging
       toast({
         title: "Error",
         description: `Failed to ${!products.some((p) => p.sku === currentProduct.sku) ? "create" : "update"} product`,
         variant: "destructive",
-      })
+      });
     }
-  }
-
+  };
   const columns: ColumnDef<Product>[] = [
     {
       accessorKey: "sku",
@@ -160,27 +170,33 @@ export default function ProductsPage() {
       accessorKey: "description",
       header: "Description",
       cell: ({ row }) => {
-        const description = row.original.description
+        const description = row.original.description || "";
         return description.length > 50 ? `${description.substring(0, 50)}...` : description
       },
     },
     {
       accessorKey: "price",
       header: "Price",
-      cell: ({ row }) => `$${row.original.price.toFixed(2)}`,
+      cell: ({ row }) => {
+        const price = row.original.price;
+        return typeof price === "number" ? `$${price.toFixed(2)}` : "N/A";
+      }
     },
     {
       accessorKey: "tags",
       header: "Tags",
-      cell: ({ row }) => (
-        <div className="flex flex-wrap gap-1">
-          {row.original.tags.split(",").map((tag, index) => (
-            <Badge key={index} variant="outline" className="mr-1">
-              {tag.trim()}
-            </Badge>
-          ))}
-        </div>
-      ),
+      cell: ({ row }) => {
+        const tags = row.original.tags || "";
+        return (
+          <div className="flex flex-wrap gap-1">
+            {tags.split(",").map((tag, index) => (
+              <Badge key={index} variant="outline" className="mr-1">
+                {tag.trim()}
+              </Badge>
+            ))}
+          </div>
+        );
+      }
     },
     {
       id: "actions",

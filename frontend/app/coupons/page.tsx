@@ -45,8 +45,13 @@ export default function CouponsPage() {
   const fetchCoupons = async () => {
     setIsLoading(true)
     try {
-      const data = await CouponAPI.getAll()
-      setCoupons(data)
+      const rawData = await CouponAPI.getAll()
+      const mappedCoupons: Coupon[] = rawData.map((item: any[]) => ({
+        couponCode: item[0],
+        discount: Number(item[1]),
+        isActive: item[2] === 1,
+      }))
+      setCoupons(mappedCoupons)
     } catch (error) {
       toast({
         title: "Error",

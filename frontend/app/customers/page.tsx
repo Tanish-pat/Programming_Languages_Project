@@ -49,8 +49,18 @@ export default function CustomersPage() {
   const fetchCustomers = async () => {
     setIsLoading(true)
     try {
-      const data = await CustomerAPI.getAll()
-      setCustomers(data)
+      const rawData = await CustomerAPI.getAll()
+  
+      // Map each array into a typed Customer object
+      const mappedData: Customer[] = rawData.map((item: any[]) => ({
+        id: Number(item[0]),
+        name: item[1],
+        email: item[2],
+        age: Number(item[3]),
+        isActive: item[4] === 1 || item[4] === true,
+      }))
+  
+      setCustomers(mappedData)
     } catch (error) {
       toast({
         title: "Error",

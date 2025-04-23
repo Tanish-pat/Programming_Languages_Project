@@ -33,56 +33,82 @@ interface Review {
   productName?: string
 }
 
+interface Customer {
+  id: number
+  name: string
+  email: string
+  age: number
+  isActive: boolean
+}
+interface Product {
+  sku: string
+  name: string
+  description: string
+  price: number
+  tags: string
+}
+
 export default function ReviewsPage() {
   const { toast } = useToast()
   const [reviews, setReviews] = useState<Review[]>([])
-  const [customers, setCustomers] = useState<any[]>([])
-  const [products, setProducts] = useState<any[]>([])
+  const [customers, setCustomers] = useState<Customer[]>([])
+  const [products, setProducts] = useState<Product[]>([])
   const [isLoading, setIsLoading] = useState(true)
   const [isDialogOpen, setIsDialogOpen] = useState(false)
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false)
   const [currentReview, setCurrentReview] = useState<Review | null>(null)
 
   useEffect(() => {
-    fetchReviews()
-    fetchCustomers()
-    fetchProducts()
+    fetchAll()
   }, [])
 
-  const fetchReviews = async () => {
+  const fetchAll = async () => {
     setIsLoading(true)
     try {
-      const data = await ReviewAPI.getAll()
+      const [reviewData, customerData, productData] = await Promise.all([
+        ReviewAPI.getAll(),
+        CustomerAPI.getAll(),
+        ProductAPI.getAll(),
+      ])
 
-      // Fetch customer and product names
-      const reviewsWithNames = await Promise.all(
-        data.map(async (review) => {
-          try {
-            const [customer, product] = await Promise.all([
-              CustomerAPI.getById(review.customerId),
-              ProductAPI.getBySku(review.productId),
-            ])
+      const mappedCustomers: Customer[] = customerData.map((c: any[]) => ({
+        id: Number(c[0]),
+        name: c[1],
+        email: c[2],
+        age: Number(c[3]),
+        isActive: c[4] === 1 || c[4] === true,
+      }))
 
-            return {
-              ...review,
-              customerName: customer.name,
-              productName: product.name,
-            }
-          } catch (error) {
-            return {
-              ...review,
-              customerName: "Unknown Customer",
-              productName: "Unknown Product",
-            }
-          }
-        }),
-      )
+      const mappedProducts: Product[] = productData.map((p: any[]) => ({
+        sku: p[0],
+        name: p[1],
+        description: p[2],
+        price: Number(p[3]),
+        tags: p[4],
+      }))
 
-      setReviews(reviewsWithNames)
+      const mappedReviews: Review[] = reviewData.map((r: any[]) => {
+        const customer = mappedCustomers.find((c) => c.id === Number(r[1]))
+        const product = mappedProducts.find((p) => p.sku === r[2])
+
+        return {
+          reviewId: Number(r[0]),
+          customerId: Number(r[1]),
+          productId: r[2],
+          rating: Number(r[3]),
+          comment: r[4],
+          customerName: customer?.name ?? "Unknown Customer",
+          productName: product?.name ?? "Unknown Product",
+        }
+      })
+
+      setCustomers(mappedCustomers)
+      setProducts(mappedProducts)
+      setReviews(mappedReviews)
     } catch (error) {
       toast({
         title: "Error",
-        description: "Failed to fetch reviews",
+        description: "Failed to fetch reviews or related data",
         variant: "destructive",
       })
     } finally {
@@ -90,31 +116,6 @@ export default function ReviewsPage() {
     }
   }
 
-  const fetchCustomers = async () => {
-    try {
-      const data = await CustomerAPI.getAll()
-      setCustomers(data)
-    } catch (error) {
-      toast({
-        title: "Error",
-        description: "Failed to fetch customers",
-        variant: "destructive",
-      })
-    }
-  }
-
-  const fetchProducts = async () => {
-    try {
-      const data = await ProductAPI.getAll()
-      setProducts(data)
-    } catch (error) {
-      toast({
-        title: "Error",
-        description: "Failed to fetch products",
-        variant: "destructive",
-      })
-    }
-  }
 
   const handleAddNew = () => {
     setCurrentReview({
@@ -146,7 +147,7 @@ export default function ReviewsPage() {
         title: "Success",
         description: "Review deleted successfully",
       })
-      fetchReviews()
+      fetchAll()
     } catch (error) {
       toast({
         title: "Error",
@@ -197,7 +198,7 @@ export default function ReviewsPage() {
         })
       }
       setIsDialogOpen(false)
-      fetchReviews()
+      fetchAll()
     } catch (error) {
       toast({
         title: "Error",

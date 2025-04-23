@@ -46,8 +46,16 @@ export default function PaymentsPage() {
   const fetchPayments = async () => {
     setIsLoading(true)
     try {
-      const data = await PaymentAPI.getAll()
-      setPayments(data)
+      const rawData = await PaymentAPI.getAll()
+  
+      const mappedPayments: Payment[] = rawData.map((item: any[]) => ({
+        paymentId: item[0],
+        amount: Number(item[1]),
+        method: item[2],
+        status: item[3],
+      }))
+  
+      setPayments(mappedPayments)
     } catch (error) {
       toast({
         title: "Error",
