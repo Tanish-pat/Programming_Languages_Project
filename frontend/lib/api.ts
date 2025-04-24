@@ -144,7 +144,7 @@ export const AddressAPI = {
 export const InventoryAPI = {
   getAll: () => fetchAPI<any[]>("/inventory/getAll"),
   getByProduct: (productId: string) => fetchAPI<any>(`/inventory/getByProduct/${productId}`),
-  uupdate: (productId: string, data: any) =>
+  update: (productId: string, data: any) =>
     fetchAPI<any>(`/inventory/update/${productId}?${toQueryParams(data)}`, {
       method: "PUT",
     }),
