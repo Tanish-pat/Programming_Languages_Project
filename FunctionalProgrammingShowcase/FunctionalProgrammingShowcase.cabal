@@ -1,0 +1,131 @@
+cabal-version: 2.4
+name:                FunctionalProgrammingShowcase
+version:             0.1.0.0
+synopsis:            Showcasing functional programming concepts
+description:         A project to demonstrate functional programming concepts in Haskell
+license:             MIT
+license-file:        LICENSE
+author:              Tanish
+maintainer:          Tanish.Pathania@iiitb.ac.in
+category:            Development
+build-type:          Simple
+
+executable Immutability
+  main-is:           Main.hs
+  hs-source-dirs:    app/Immutability
+  ghc-options:       -w
+  build-depends:
+        base >=4.14 && <5
+    , template-haskell >=2.19
+    , containers
+    , text
+    , aeson
+    , bytestring
+    , directory
+    , filepath
+    , optparse-applicative
+  other-modules:     Immutability
+  default-language:  Haskell2010
+
+executable HigherOrderFunctions
+  main-is:           Main.hs
+  hs-source-dirs:    app/HigherOrderFunctions
+  ghc-options:       -w
+  build-depends:
+        base >=4.14 && <5
+    , template-haskell >=2.19
+    , containers
+    , text
+    , aeson
+    , bytestring
+    , directory
+    , filepath
+    , optparse-applicative
+  other-modules:     HigherOrderFunctions
+  default-language:  Haskell2010
+
+executable FirstClassFunctions
+  main-is:           Main.hs
+  hs-source-dirs:    app/FirstClassFunctions
+  ghc-options:       -w
+  build-depends:
+        base >=4.14 && <5
+    , template-haskell >=2.19
+    , containers
+    , text
+    , aeson
+    , bytestring
+    , directory
+    , filepath
+    , optparse-applicative
+  other-modules:     FirstClassFunctions
+  default-language:  Haskell2010
+
+executable FunctionComposition
+  main-is:           Main.hs
+  hs-source-dirs:    app/FunctionComposition
+  ghc-options:       -w
+  build-depends:
+        base >=4.14 && <5
+    , template-haskell >=2.19
+    , containers
+    , text
+    , aeson
+    , bytestring
+    , directory
+    , filepath
+    , optparse-applicative
+  other-modules:     FunctionComposition
+  default-language:  Haskell2010
+
+executable MonadLazyEvaluation
+  main-is:           Main.hs
+  hs-source-dirs:    app/MonadLazyEvaluation
+  ghc-options:       -w
+  build-depends:
+        base >=4.14 && <5
+    , template-haskell >=2.19
+    , containers
+    , text
+    , aeson
+    , bytestring
+    , directory
+    , filepath
+    , optparse-applicative
+  other-modules:     MonadLazyEvaluation
+  default-language:  Haskell2010
+
+executable PureFunctionsCurrying
+  main-is:           Main.hs
+  hs-source-dirs:    app/PureFunctionsCurrying
+  ghc-options:       -w
+  build-depends:
+        base >=4.14 && <5
+    , template-haskell >=2.19
+    , containers
+    , text
+    , aeson
+    , bytestring
+    , directory
+    , filepath
+    , optparse-applicative
+  other-modules:     PureFunctionsCurrying
+  default-language:  Haskell2010
+
+executable Generator
+  main-is:           Main.hs
+  hs-source-dirs:    app/Generator
+  ghc-options:       -w
+  build-depends:
+        base >=4.14 && <5
+    , template-haskell >=2.19
+    , containers
+    , text
+    , aeson
+    , bytestring
+    , directory
+    , filepath
+    , optparse-applicative
+    , hint
+    , process
+  default-language:  Haskell2010
