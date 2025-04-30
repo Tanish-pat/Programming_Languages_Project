@@ -1,0 +1,1 @@
+Pipeline {name = "Test", steps = ["\\x -> reverse x","\\x -> map toUpper x"]}

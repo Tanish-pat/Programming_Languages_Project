@@ -1,0 +1,1 @@
+Pipeline {name = "Test2", steps = ["\\x -> \"Hello\""]}

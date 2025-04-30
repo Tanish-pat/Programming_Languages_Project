@@ -1,0 +1,1 @@
+Pipeline {name = "Hemang", steps = ["\\x -> reverse x","\\x -> map toLower x"]}

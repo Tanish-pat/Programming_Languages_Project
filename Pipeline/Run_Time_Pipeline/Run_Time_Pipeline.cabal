@@ -1,0 +1,35 @@
+cabal-version:       >=1.10
+name:                run-time-pipeline
+version:             0.1.0.0
+synopsis:            Runtime meta-programming pipeline in Haskell
+description:         A Haskell project demonstrating runtime meta-programming and dynamic behavior.
+category:            Development
+author:              Rutul Patel
+maintainer:          rutul@example.com
+license:             BSD3
+license-file:        LICENSE
+build-type:          Simple
+extra-source-files:  README.md
+
+executable run-time-pipeline
+  main-is:             Main.hs
+  hs-source-dirs:      .
+  default-language:    Haskell2010
+  ghc-options:         -Wall
+  build-depends:
+      base >=4.15 && <5,
+      containers,
+      text,
+      bytestring,
+      directory,
+      template-haskell,
+      hint
+  other-modules:
+      Colors
+      DynamicComposer
+      FileManager
+      SnippetEvaluator
+      THGenerated
+      Templates
+      Types
+      Utils
