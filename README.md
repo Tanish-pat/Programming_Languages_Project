@@ -47,6 +47,7 @@ This project reflects how powerful functional programming can be when extended w
 ---
 
 ## 📁 Repository Structure
+```plaintext
 Programming_Languages_Project/
 ├── Inventory/                  # Main code for the pipeline system
 │   ├── Main.hs                # Entry point
@@ -57,7 +58,7 @@ Programming_Languages_Project/
 ├── demo/                      # Example inputs and output logs
 ├── LICENSE
 └── README.md                  # Project readme (this file)
-
+```
 ---
 
 ## ⚙️ Getting Started
