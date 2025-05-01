@@ -82,8 +82,11 @@ cd Programming_Languages_Project/Inventory
 ### 3. Compile & Run
 
 ```bash
-ghc Main.hs -o pipeline
-./pipeline
+chmod + deploy.sh
+./deploy.sh
+cd frontend
+npm install --legacy-peer-deps
+PORT=3001 npm run dev
 ```
 
 ## 📖 Project Report
