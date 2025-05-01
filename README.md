@@ -22,7 +22,7 @@ This repository demonstrates how **meta-programming** can be applied effectively
 
 ## 📌 About the Project
 
-The project titled **"Leveraging Meta-Programming in Functional Programming"** focuses on building a **dynamic pipeline system** in Haskell. Users can construct a sequence of transformations at runtime and apply them to input data.
+The project titled **"Leveraging Meta-Programming in Functional Programming"** focuses on building a **dynamic pipeline system** in Haskell. Users can construct a sequence of transformations at runtime and apply them to input data. 
 
 We leverage:
 - Higher-order functions
@@ -114,4 +114,7 @@ Topics covered:
 
  ## 🙌 Acknowledgements
  	•	Open-source Haskell community
+   	•	Sujit Sir 
 	•	Our course instructor and TAs for their guidance
+ 	
+	
